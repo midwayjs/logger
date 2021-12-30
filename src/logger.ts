@@ -108,7 +108,7 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
     );
 
     this.consoleTransport = new transports.Console({
-      level: options.consoleLevel || options.level || 'silly',
+      level: (options.consoleLevel || options.level || 'silly').toLowerCase(),
       format: format.combine(
         process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true'
           ? format.colorize({
@@ -194,7 +194,7 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
         filename: this.loggerOptions.fileLogName,
         datePattern: this.loggerOptions.fileDatePattern || 'YYYY-MM-DD',
         level:
-          this.loggerOptions.fileLevel || this.loggerOptions.level || 'silly',
+          (this.loggerOptions.fileLevel || this.loggerOptions.level || 'silly').toLowerCase(),
         createSymlink: this.loggerOptions.disableFileSymlink !== true,
         symlinkName: this.loggerOptions.fileLogName,
         maxSize: this.loggerOptions.fileMaxSize || '200m',
@@ -249,17 +249,17 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
   }
 
   updateLevel(level: LoggerLevel): void {
-    this.level = level;
+    this.level = level.toLowerCase();
     this.consoleTransport.level = level;
     this.fileTransport.level = level;
   }
 
   updateFileLevel(level: LoggerLevel): void {
-    this.fileTransport.level = level;
+    this.fileTransport.level = level.toLowerCase();
   }
 
   updateConsoleLevel(level: LoggerLevel): void {
-    this.consoleTransport.level = level;
+    this.consoleTransport.level = level.toLowerCase();
   }
 
   updateDefaultLabel(defaultLabel: string): void {

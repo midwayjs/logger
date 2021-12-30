@@ -38,7 +38,7 @@ export interface IMidwayLogger extends ILogger {
   close(): any;
 }
 
-export type LoggerLevel = 'all' | 'silly' | 'debug' | 'info' | 'warn' | 'error' | 'none';
+export type LoggerLevel = 'all' | 'silly' | 'debug' | 'info' | 'warn' | 'error' | 'none' | 'ALL' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE';
 
 export interface LoggerOptions {
   format?: logform.Format;
