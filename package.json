@@ -12,7 +12,7 @@
     "winston-transport": "^4.4.0"
   },
   "devDependencies": {
-    "@types/jest": "27.0.3",
+    "@types/jest": "27.4.0",
     "@types/node": "16.11.17",
     "colors": "1.4.0",
     "cross-env": "6.0.3",
