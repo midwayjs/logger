@@ -193,8 +193,11 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
         dirname: this.loggerOptions.dir,
         filename: this.loggerOptions.fileLogName,
         datePattern: this.loggerOptions.fileDatePattern || 'YYYY-MM-DD',
-        level:
-          (this.loggerOptions.fileLevel || this.loggerOptions.level || 'silly').toLowerCase(),
+        level: (
+          this.loggerOptions.fileLevel ||
+          this.loggerOptions.level ||
+          'silly'
+        ).toLowerCase(),
         createSymlink: this.loggerOptions.disableFileSymlink !== true,
         symlinkName: this.loggerOptions.fileLogName,
         maxSize: this.loggerOptions.fileMaxSize || '200m',
