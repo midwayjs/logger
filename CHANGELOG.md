@@ -1,7 +1,10 @@
-# Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+2.14.0 / 2021-12-30
+===================
+
+  * doc: update
+  * feat: migrate code from midway
+
 
 # [3.0.0-beta.13](https://github.com/midwayjs/midway/compare/v3.0.0-beta.12...v3.0.0-beta.13) (2021-12-30)
 
