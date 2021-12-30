@@ -1,0 +1,26 @@
+{
+  "extends": "./node_modules/mwts/tsconfig-midway.json",
+  "compileOnSave": true,
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitThis": false,
+    "noUnusedLocals": true,
+    "stripInternal": true,
+    "noImplicitReturns": false,
+    "strict": false,
+    "noEmitOnError": false,
+    "skipLibCheck": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "test"
+  ]
+}
