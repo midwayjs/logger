@@ -37,7 +37,9 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "test": "jest",
-    "cov": "jest --coverage --forceExit"
+    "cov": "jest --coverage --forceExit",
+    "lint": "mwts check",
+    "lint:fix": "mwts fix"
   },
   "repository": {
     "type": "git",
