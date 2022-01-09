@@ -14,7 +14,7 @@
   "devDependencies": {
     "@types/jest": "27.4.0",
     "@types/node": "16.11.17",
-    "colors": "1.4.0",
+    "colors": "1.4.2",
     "cross-env": "7.0.3",
     "egg-logger": "2.7.1",
     "fs-extra": "10.0.0",
