@@ -1,4 +1,21 @@
 
+2.14.1 / 2022-01-23
+===================
+
+  * chore: revert
+  * fix: build add inlinesource
+  * test: try to pin
+  * chore(deps): update dependency jest to v27.4.7 (#11)
+  * chore(deps): update dependency @types/node to v16.11.21 (#14)
+  * chore(deps): update dependency typescript to v4.5.5 (#15)
+  * chore(deps): update dependency @types/node to v16.11.20 (#10)
+  * chore(deps): update dependency ts-jest to v27.1.3 (#13)
+  * chore(deps): update dependency @types/jest to v27.4.0 (#9)
+  * chore(deps): update dependency fs-extra to v10 (#8)
+  * chore(deps): update dependency cross-env to v7 (#7)
+  * chore(deps): update codecov/codecov-action action to v2 (#6)
+  * chore(deps): update actions/setup-node action to v2 (#5)
+
 2.14.0 / 2021-12-30
 ===================
 
