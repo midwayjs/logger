@@ -10,13 +10,18 @@ import {
   ContextLoggerOptions,
 } from '../interface';
 import { EmptyTransport } from '../transport';
-import { displayLabels, displayCommonMessage } from '../format';
+import { displayLabels, displayCommonMessage, customJSON } from '../format';
 import * as os from 'os';
 import { basename, dirname, isAbsolute } from 'path';
 import * as util from 'util';
 import { ORIGIN_ARGS, ORIGIN_ERROR } from '../constant';
 import { WinstonLogger } from '../winston/logger';
-import { formatLevel } from '../util';
+import {
+  assertConditionTruthy,
+  assertEmptyAndThrow,
+  formatJsonLogName,
+  formatLevel,
+} from '../util';
 import { MidwayChildLogger } from './child';
 import { MidwayContextLogger } from './contextLogger';
 
@@ -47,15 +52,19 @@ const midwayLogLevels = {
  *  base logger with console transport and file transport
  */
 export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
-  level: LoggerLevel;
-  consoleTransport;
-  fileTransport;
-  errTransport;
-  loggerOptions: LoggerOptions;
-  defaultLabel;
-  defaultMetadata = {};
-  customInfoHandler: LoggerCustomInfoHandler = info => {
+  protected level: LoggerLevel;
+  private consoleTransport;
+  private fileTransport;
+  private errTransport;
+  private jsonTransport;
+  private loggerOptions: LoggerOptions;
+  private defaultLabel;
+  private defaultMetadata = {};
+  private customInfoHandler: LoggerCustomInfoHandler = info => {
     return info;
+  };
+  private defaultPrintFormat = (info: MidwayTransformableInfo): string => {
+    return `${info.timestamp} ${info.LEVEL} ${info.pid} ${info.labelText}${info.message}`;
   };
 
   constructor(options: LoggerOptions = {}) {
@@ -77,57 +86,51 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
       this.defaultMetadata = this.loggerOptions.defaultMeta;
     }
 
-    const loggerFormat = this.loggerOptions.format ?? this.getDefaultFormat();
-
     this.configure({
-      format: loggerFormat,
+      format: this.getDefaultFormat(),
       exitOnError: false,
     });
 
-    this.consoleTransport = new transports.Console({
-      level: formatLevel(options.consoleLevel || options.level || 'silly'),
-      format: format.combine(
-        process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true'
-          ? format.colorize({
-              all: true,
-              colors: {
-                none: 'reset',
-                error: 'red',
-                trace: 'reset',
-                warn: 'yellow',
-                info: 'reset',
-                verbose: 'reset',
-                debug: 'blue',
-                silly: 'reset',
-                all: 'reset',
-              },
-            })
-          : format(i => i)()
-      ),
-    });
-
-    if (options.disableConsole !== true) {
+    // add console log transport
+    if (options.enableConsole !== false && options.disableConsole !== true) {
       this.enableConsole();
     }
 
     options.dir = options.dir || process.cwd();
-    options.fileLogName = options.fileLogName || 'midway-core.log';
-    if (isAbsolute(options.fileLogName)) {
-      options.dir = dirname(options.fileLogName);
-      options.fileLogName = basename(options.fileLogName);
-    }
-    options.errorLogName = options.errorLogName || 'common-error.log';
-    if (isAbsolute(options.errorLogName)) {
-      options.errorDir = dirname(options.errorLogName);
-      options.errorLogName = basename(options.errorLogName);
-    }
 
-    if (options.disableFile !== true) {
+    // add file log transport
+    if (options.enableFile !== false && options.disableFile !== true) {
+      assertEmptyAndThrow(
+        options.fileLogName,
+        '[logger]: Please set fileLogName when enable file log'
+      );
+      if (isAbsolute(options.fileLogName)) {
+        options.dir = dirname(options.fileLogName);
+        options.fileLogName = basename(options.fileLogName);
+      }
       this.enableFile();
     }
 
-    if (options.disableError !== true) {
+    // add error log transport
+    if (options.enableError !== false && options.disableError !== true) {
+      options.errorLogName = options.errorLogName || 'common-error.log';
+      if (isAbsolute(options.errorLogName)) {
+        options.errorDir = dirname(options.errorLogName);
+        options.errorLogName = basename(options.errorLogName);
+      }
+
       this.enableError();
+    }
+
+    // add json log transport
+    if (options.enableJSON === true) {
+      options.jsonLogName =
+        options.jsonLogName ?? formatJsonLogName(options.fileLogName);
+      assertEmptyAndThrow(
+        options.jsonLogName,
+        '[logger]: Please set jsonLogName when enable output json'
+      );
+      this.enableJSON();
     }
     this.add(new EmptyTransport());
   }
@@ -158,6 +161,33 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   }
 
   enableConsole(): void {
+    if (!this.consoleTransport) {
+      this.consoleTransport = new transports.Console({
+        level: formatLevel(
+          this.loggerOptions.consoleLevel || this.loggerOptions.level || 'silly'
+        ),
+        format:
+          process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true'
+            ? format.combine(
+                this.getDefaultPrint(),
+                format.colorize({
+                  all: true,
+                  colors: {
+                    none: 'reset',
+                    error: 'red',
+                    trace: 'reset',
+                    warn: 'yellow',
+                    info: 'reset',
+                    verbose: 'reset',
+                    debug: 'blue',
+                    silly: 'reset',
+                    all: 'reset',
+                  },
+                })
+              )
+            : this.getDefaultPrint(),
+      });
+    }
     this.add(this.consoleTransport);
   }
 
@@ -170,16 +200,31 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
       this.fileTransport = new DailyRotateFileTransport({
         dirname: this.loggerOptions.dir,
         filename: this.loggerOptions.fileLogName,
-        datePattern: this.loggerOptions.fileDatePattern || 'YYYY-MM-DD',
+        datePattern:
+          this.loggerOptions.fileDatePattern ||
+          this.loggerOptions.datePattern ||
+          'YYYY-MM-DD',
         level: formatLevel(
           this.loggerOptions.fileLevel || this.loggerOptions.level || 'silly'
         ),
-        createSymlink: this.loggerOptions.disableFileSymlink !== true,
+        createSymlink: assertConditionTruthy(
+          this.loggerOptions.disableFileSymlink,
+          this.loggerOptions.disableSymlink
+        ),
         symlinkName: this.loggerOptions.fileLogName,
-        maxSize: this.loggerOptions.fileMaxSize || '200m',
-        maxFiles: this.loggerOptions.fileMaxFiles || '31d',
+        maxSize:
+          this.loggerOptions.fileMaxSize ||
+          this.loggerOptions.maxSize ||
+          '200m',
+        maxFiles:
+          this.loggerOptions.fileMaxFiles ||
+          this.loggerOptions.maxFiles ||
+          '31d',
         eol: this.loggerOptions.eol || os.EOL,
-        zippedArchive: this.loggerOptions.fileZippedArchive,
+        zippedArchive:
+          this.loggerOptions.fileZippedArchive ||
+          this.loggerOptions.zippedArchive,
+        format: this.getDefaultPrint(),
       });
     }
     this.add(this.fileTransport);
@@ -192,19 +237,72 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   enableError(): void {
     if (!this.errTransport) {
       this.errTransport = new DailyRotateFileTransport({
-        dirname: this.loggerOptions.errorDir || this.loggerOptions.dir,
+        dirname:
+          this.loggerOptions.errorDir ||
+          this.loggerOptions.datePattern ||
+          this.loggerOptions.dir,
         filename: this.loggerOptions.errorLogName,
         datePattern: this.loggerOptions.errDatePattern || 'YYYY-MM-DD',
         level: 'error',
-        createSymlink: this.loggerOptions.disableErrorSymlink !== true,
+        createSymlink: assertConditionTruthy(
+          this.loggerOptions.disableErrorSymlink,
+          this.loggerOptions.disableSymlink
+        ),
         symlinkName: this.loggerOptions.errorLogName,
-        maxSize: this.loggerOptions.errMaxSize || '200m',
-        maxFiles: this.loggerOptions.errMaxFiles || '31d',
+        maxSize:
+          this.loggerOptions.errMaxSize || this.loggerOptions.maxSize || '200m',
+        maxFiles:
+          this.loggerOptions.errMaxFiles ||
+          this.loggerOptions.maxFiles ||
+          '31d',
         eol: this.loggerOptions.eol || os.EOL,
-        zippedArchive: this.loggerOptions.errZippedArchive,
+        zippedArchive:
+          this.loggerOptions.errZippedArchive ||
+          this.loggerOptions.zippedArchive,
+        format: this.getDefaultPrint(),
       });
     }
     this.add(this.errTransport);
+  }
+
+  enableJSON(): void {
+    if (!this.jsonTransport) {
+      this.jsonTransport = new DailyRotateFileTransport({
+        format: format.combine(
+          customJSON({
+            jsonFormat: this.loggerOptions.jsonFormat,
+          }),
+          format.json()
+        ),
+        dirname: this.loggerOptions.jsonDir || this.loggerOptions.dir,
+        filename: this.loggerOptions.jsonLogName,
+        datePattern:
+          this.loggerOptions.jsonDatePattern ||
+          this.loggerOptions.datePattern ||
+          'YYYY-MM-DD',
+        level: formatLevel(
+          this.loggerOptions.jsonLevel || this.loggerOptions.level || 'silly'
+        ),
+        createSymlink: assertConditionTruthy(
+          this.loggerOptions.disableJSONSymlink,
+          this.loggerOptions.disableSymlink
+        ),
+        symlinkName: this.loggerOptions.jsonLogName,
+        maxSize:
+          this.loggerOptions.jsonMaxSize ||
+          this.loggerOptions.maxSize ||
+          '200m',
+        maxFiles:
+          this.loggerOptions.jsonMaxFiles ||
+          this.loggerOptions.maxFiles ||
+          '31d',
+        eol: this.loggerOptions.jsonEol || os.EOL,
+        zippedArchive:
+          this.loggerOptions.jsonZippedArchive ||
+          this.loggerOptions.zippedArchive,
+      });
+    }
+    this.add(this.jsonTransport);
   }
 
   isEnableFile(): boolean {
@@ -249,31 +347,39 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
     this.defaultMetadata = defaultMetadata;
   }
 
+  /**
+   * @deprecated
+   * @param customInfoHandler
+   */
   updateTransformableInfo(customInfoHandler: LoggerCustomInfoHandler): void {
     this.customInfoHandler = customInfoHandler;
   }
 
   protected getDefaultFormat() {
-    const defaultFormat = (info: MidwayTransformableInfo): string => {
-      return `${info.timestamp} ${info.LEVEL} ${info.pid} ${info.labelText}${info.message}`;
-    };
+    return format.combine(
+      format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss,SSS',
+      }),
+      format.splat()
+    );
+  }
+
+  private getDefaultPrint() {
     return format.combine(
       displayCommonMessage({
         target: this,
       }),
       displayLabels(),
-      format.timestamp({
-        format: 'YYYY-MM-DD HH:mm:ss,SSS',
-      }),
-      format.splat(),
       format.printf(info => {
         if (info.ignoreFormat) {
           return info.message;
         }
         const newInfo = this.customInfoHandler(info as MidwayTransformableInfo);
         const printInfo =
-          newInfo.format ?? this.loggerOptions.printFormat ?? defaultFormat;
-        delete newInfo['format'];
+          newInfo.format ||
+          this.loggerOptions.format ||
+          this.loggerOptions.printFormat ||
+          this.defaultPrintFormat;
         return printInfo(newInfo || (info as MidwayTransformableInfo));
       })
     );

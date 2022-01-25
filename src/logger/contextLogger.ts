@@ -50,6 +50,7 @@ export class MidwayContextLogger<CTX> implements IMidwayContextLogger<CTX> {
         label: this.formatContextLabel(),
         ctx: this.ctx,
         format: this.options.contextFormat,
+        jsonFormat: this.options.jsonFormat,
       },
     ]);
   }

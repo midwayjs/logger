@@ -12,7 +12,7 @@ describe('/test/contextLogger.test.ts', function () {
       dir: logsDir,
       fileLogName: 'test-logger.log',
       disableError: true,
-      printFormat: info => {
+      format: info => {
         return info.ctx.data + ' ' + info.message;
       },
     });
@@ -37,7 +37,7 @@ describe('/test/contextLogger.test.ts', function () {
       fileLogName: 'test-logger.log',
       disableError: true,
       level: 'debug',
-      printFormat: info => {
+      format: info => {
         return info.ctx.data + ' ' + info.message;
       },
       contextFormat: info => {
@@ -75,7 +75,7 @@ describe('/test/contextLogger.test.ts', function () {
       dir: logsDir,
       fileLogName: 'test-logger.log',
       disableError: true,
-      printFormat: info => {
+      format: info => {
         return info.message;
       },
       level: 'warn',
@@ -114,7 +114,7 @@ describe('/test/contextLogger.test.ts', function () {
       dir: logsDir,
       fileLogName: 'test-logger.log',
       disableError: true,
-      printFormat: info => {
+      format: info => {
         return info.message;
       },
       level: 'warn',
@@ -123,7 +123,7 @@ describe('/test/contextLogger.test.ts', function () {
     const logger = createLogger<IMidwayLogger>('testLogger', loggerOptions);
 
     const child = logger.createChildLogger({
-      printFormat: info => {
+      format: info => {
         return `child ${info.message}`;
       }
     });
@@ -162,7 +162,7 @@ describe('/test/contextLogger.test.ts', function () {
       dir: logsDir,
       fileLogName: 'test-logger.log',
       disableError: true,
-      printFormat: info => {
+      format: info => {
         return info.message;
       },
       level: 'warn',
@@ -171,7 +171,7 @@ describe('/test/contextLogger.test.ts', function () {
     const logger = createLogger<IMidwayLogger>('testLogger', loggerOptions);
 
     const child = logger.createChildLogger({
-      printFormat: info => {
+      format: info => {
         return `child ${info.message}`;
       }
     });

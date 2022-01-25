@@ -54,3 +54,40 @@ export function debounce(func: () => void, wait: number, immediate?) {
 export function formatLevel(level: string): LoggerLevel {
   return level.toLowerCase() as LoggerLevel;
 }
+
+export function formatJsonLogName(name: string): string {
+  if (name === null || name === undefined) {
+    return name;
+  }
+  if (/\.log$/.test(name)) {
+    return name.replace('.log', '.json.log');
+  } else if (/\.$/.test(name)) {
+    return name + 'json.log';
+  } else {
+    return name + '.json.log';
+  }
+}
+
+export function assertEmptyAndThrow(name: string, message) {
+  if (name === null || name === undefined) {
+    throw new Error(message);
+  }
+}
+
+/**
+ * 只要有一个 false 就返回 true
+ * 默认为 undefined, null, false 时返回 true
+ * @param args
+ */
+export function assertConditionTruthy(...args): boolean {
+  if (args && args.length) {
+    for (const param of args) {
+      if (param !== true) {
+        continue;
+      } else {
+        return false;
+      }
+    }
+  }
+  return true;
+}

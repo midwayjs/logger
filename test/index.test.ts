@@ -7,8 +7,6 @@ import {
   createLogger,
   IMidwayLogger,
   loggers,
-  format,
-  displayCommonMessage,
   EmptyTransport,
   ILogger,
 } from '../src';
@@ -101,6 +99,7 @@ describe('/test/index.test.ts', () => {
     await removeFileOrDir(logsDir);
     const coreLogger = new MidwayBaseLogger({
       dir: logsDir,
+      fileLogName: 'midway-core.log'
     });
 
     expect(coreLogger.getConsoleLevel()).toEqual('silly');
@@ -545,39 +544,6 @@ describe('/test/index.test.ts', () => {
       )
     ).toBeTruthy();
 
-    const customFormatLogger = createLogger<IMidwayLogger>('testLogger1', {
-      dir: logsDir,
-      fileLogName: 'test-logger1.log',
-      disableError: true,
-      defaultMeta: {
-        name: 'my-site',
-        group: 'my-group',
-      },
-      format: format.combine(displayCommonMessage(), format.json()),
-    });
-
-    customFormatLogger.info(123);
-    customFormatLogger.error({
-      user: 123,
-      msg: {
-        data: 'hello',
-      },
-    });
-    await sleep();
-    expect(fileExists(join(logsDir, 'test-logger1.log'))).toBeTruthy();
-    expect(
-      includeContent(
-        join(logsDir, 'test-logger1.log'),
-        '\"message\":\"123\"'
-      )
-    ).toBeTruthy();
-    expect(
-      includeContent(
-        join(logsDir, 'test-logger1.log'),
-        '\"message\":\"{ user: 123, msg: { data: \'hello\' } }\"'
-      )
-    ).toBeTruthy();
-
     await removeFileOrDir(logsDir);
   });
 
@@ -837,6 +803,7 @@ describe('/test/index.test.ts', () => {
       dir: logsDir,
       disableError: true,
       level: 'info',
+      fileLogName: 'midway-core.log'
     });
     logger.write('hello world');
     const buffer = Buffer.from('hello world', 'utf-8');
@@ -862,6 +829,7 @@ describe('/test/index.test.ts', () => {
     const logger = createLogger<IMidwayLogger>('logger', {
       dir: logsDir,
       level: 'trace',
+      fileLogName: 'midway-core.log'
     });
     logger.write('hello world');
     const buffer = Buffer.from('hello world', 'utf-8');
@@ -901,6 +869,7 @@ describe('/test/index.test.ts', () => {
       dir: logsDir,
       disableError: true,
       level: 'info',
+      fileLogName: 'midway-core.log'
     });
 
     expect(logger.isEnableConsole()).toBeTruthy();
@@ -1114,6 +1083,17 @@ describe('/test/index.test.ts', () => {
       matchContentTimes(join(logsDir, 'test-logger.log'), 'file logger')
     ).toEqual(3);
     await removeFileOrDir(logsDir);
+  });
+
+  it('should test color with console', function () {
+    clearAllLoggers();
+    const fn = jest.spyOn((console as any)._stdout, 'write');
+    const consoleLogger = createConsoleLogger('consoleLogger');
+    consoleLogger.debug('test', 'test1', 'test2', 'test3');
+    consoleLogger.info('test', 'test1', 'test2', 'test3');
+    consoleLogger.warn('test', 'test1', 'test2', 'test3');
+    consoleLogger.error('test', 'test1', 'test2', 'test3');
+    expect(fn.mock.calls[0][0]).toContain('\x1B');
   });
 
   it('should test no color with console', function () {

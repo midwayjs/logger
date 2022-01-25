@@ -63,7 +63,8 @@ export class MidwayChildLogger implements IMidwayChildLogger {
     return this.parentLogger[level].apply(this.parentLogger, [
       ...args,
       {
-        format: this.options.printFormat,
+        format: this.options.format,
+        jsonFormat: this.options.jsonFormat,
       },
     ]);
   }

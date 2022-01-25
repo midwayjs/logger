@@ -1,8 +1,15 @@
-# midway-logger
+# @midwayjs/logger
 
 [![Package Quality](http://npm.packagequality.com/shield/@midwayjs/logger.svg)](http://packagequality.com/#?package=@midwayjs/logger)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/midwayjs/midway/pulls)
 
+@midwayjs/logger is a log module extended based on winston, which is suitable for log output under a single process, and supports multiple formats and customizations.
+
+## Install
+
+```bash
+$ npm install @midwayjs/logger --save
+```
 
 ## Create Logger
 
@@ -13,6 +20,26 @@ const logger = loggers.createLogger('logger', {
   // some logger options
 })
 ```
+
+Create console, file and error Logger.(default logger, include console, file and error 3 transports)
+
+```typescript
+const logger = loggers.createLogger('logger', {
+  dir: '...',
+  fileLogName: 'app.log',
+  errorLogName: 'error.log',
+})
+```
+
+Create console logger(just disable file and error transports)
+
+```typescript
+const logger = loggers.createLogger('consoleLogger', {
+  enableFile: false,
+  enableError: false,
+})
+```
+
 
 ## Logger Output Method
 
@@ -41,32 +68,46 @@ const levels = {
 }
 ```
 
+Set level for all transports
+
+```typescript
+const logger = loggers.createLogger('logger', {
+  dir: '...',
+  level: 'warn',
+  fileLogName: 'app.log',
+  errorLogName: 'error.log',
+});
+
+// not output
+logger.debug('debug info');
+
+// not output
+logger.info('debug info');
+```
+
+## Format
+
+Change file and error logger format.
+
+```typescript
+const logger = loggers.createLogger('logger', {
+  dir: '...',
+  level: 'warn',
+  fileLogName: 'app.log',
+  errorLogName: 'error.log',
+  format: info => {
+    return `${info.timestamp} ${info.message}`;
+  }
+});
+```
+
+info is a winston metadata we called 'MidwayTransformableInfo' and include some [default value](https://github.com/midwayjs/logger/blob/main/src/interface.ts#L248);
+
+
 ## Logger Options
 
-```ts
-export interface LoggerOptions {
-  dir?: string;
-  fileLogName?: string;
-  errorLogName?: string;
-  label?: string;
-  disableConsole?: boolean;
-  disableFile?: boolean;
-  disableError?: boolean;
-  consoleLevel?: LoggerLevel;
-  fileLevel?: LoggerLevel;
-  fileMaxSize?: string;
-  fileMaxFiles?: string;
-  fileDatePattern?: string;
-  errMaxSize?: string;
-  errMaxFiles?: string;
-  errDatePattern?: string;
-  disableFileSymlink?: boolean;
-  disableErrorSymlink?: boolean;
-  printFormat?: (info) => string;
-  format?: logform.format;
-  eol?: string;
-}
-```
+find more options in [interface](https://github.com/midwayjs/logger/blob/main/src/interface.ts#L70).
+
 
 ## License
 

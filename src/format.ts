@@ -2,6 +2,12 @@ import { format } from 'winston';
 import { IMidwayLogger } from './interface';
 import { ORIGIN_ARGS, ORIGIN_ERROR } from './constant';
 
+function removeProperty(o, p) {
+  if (p in o) {
+    delete o[p];
+  }
+}
+
 export const displayCommonMessage = format(
   (
     info,
@@ -74,4 +80,39 @@ export const displayLabels = format((info, opts) => {
     ...[].concat(info.label)
   );
   return info;
+});
+
+export const customJSON = format((info, opts) => {
+  info.pid = process.pid;
+  const meta = {} as any;
+  if (info[ORIGIN_ERROR as any]) {
+    meta.originError = info[ORIGIN_ERROR as any];
+  }
+
+  if (info[ORIGIN_ARGS as any]) {
+    meta.originArgs = info[ORIGIN_ARGS as any];
+  }
+
+  meta.ignoreFormat = info.ignoreFormat ?? false;
+  removeProperty(info, 'ignoreFormat');
+
+  meta.ctx = info.ctx ?? null;
+  removeProperty(info, 'ctx');
+
+  // meta.format = info.format ?? null;
+  removeProperty(info, 'format');
+
+  meta.LEVEL = info.LEVEL ?? info.level.toUpperCase();
+  removeProperty(info, 'LEVEL');
+  info.level = meta.LEVEL;
+
+  removeProperty(info, 'label');
+  removeProperty(info, 'defaultLabel');
+  const jsonFormat = info.jsonFormat || opts.jsonFormat;
+  removeProperty(info, 'jsonFormat');
+  if (jsonFormat) {
+    return jsonFormat(info, meta) ?? info;
+  } else {
+    return info;
+  }
 });
