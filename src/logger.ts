@@ -51,12 +51,13 @@ export const EmptyLogger = createLogger().constructor as unknown as {
 const midwayLogLevels = {
   none: 0,
   error: 1,
-  warn: 2,
-  info: 3,
-  verbose: 4,
-  debug: 5,
-  silly: 6,
-  all: 7,
+  trace: 2,
+  warn: 3,
+  info: 4,
+  verbose: 5,
+  debug: 6,
+  silly: 7,
+  all: 8,
 };
 
 /**
@@ -116,6 +117,7 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
               colors: {
                 none: 'reset',
                 error: 'red',
+                trace: 'reset',
                 warn: 'yellow',
                 info: 'reset',
                 verbose: 'reset',
@@ -321,7 +323,7 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
       !args[0]['level']
     ) {
       // 这里必须要用 none
-      return super.log.apply(this, ['none', ...args, { ignoreFormat: true }]);
+      return super.log.apply(this, ['trace', ...args, { ignoreFormat: true }]);
     } else {
       return super.write.apply(this, args);
     }

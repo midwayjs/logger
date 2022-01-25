@@ -837,7 +837,7 @@ describe('/test/index.test.ts', () => {
     const logger = createLogger<IMidwayLogger>('logger', {
       dir: logsDir,
       disableError: true,
-      level: 'error',
+      level: 'info',
     });
     logger.write('hello world');
     const buffer = Buffer.from('hello world', 'utf-8');
@@ -853,6 +853,33 @@ describe('/test/index.test.ts', () => {
     expect(
       matchContentTimes(join(logsDir, 'midway-core.log'), 'hello world')
     ).toEqual(2);
+    await removeFileOrDir(logsDir);
+  });
+
+  it('should use write method to file and not write to error file', async () => {
+    clearAllLoggers();
+    const logsDir = join(__dirname, 'logs');
+    await removeFileOrDir(logsDir);
+    const logger = createLogger<IMidwayLogger>('logger', {
+      dir: logsDir,
+      level: 'trace',
+    });
+    logger.write('hello world');
+    const buffer = Buffer.from('hello world', 'utf-8');
+    logger.write(buffer);
+
+    await sleep();
+
+    expect(
+      matchContentTimes(join(logsDir, 'midway-core.log'), 'hello world')
+    ).toEqual(2);
+
+    expect(
+      matchContentTimes(
+        join(logsDir, 'common-error.log'),
+        'hello world'
+      )
+    ).toEqual(0);
     await removeFileOrDir(logsDir);
   });
 

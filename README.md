@@ -28,14 +28,16 @@ logger.error(new Error('my error'));
 log level is divided into the following categories, and the log level decreases sequentially (the larger the number, the lower the level):
 
 ```ts
-const levels = { 
-  all: 0,
+const levels = {
+  none: 0,
   error: 1,
-  warn: 2,
-  info: 3,
-  verbose: 4,
-  debug: 5,
-  silly: 6
+  trace: 2,
+  warn: 3,
+  info: 4,
+  verbose: 5,
+  debug: 6,
+  silly: 7,
+  all: 8,
 }
 ```
 
