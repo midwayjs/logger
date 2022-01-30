@@ -5,7 +5,6 @@ import * as crypto from 'crypto';
 import { sleep } from '../util';
 
 (async () => {
-
   if (cluster['isMaster']) {
     console.log(`Master ${process.pid} is running`);
     const pidList = [];

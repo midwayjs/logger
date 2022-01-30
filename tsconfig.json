@@ -5,7 +5,6 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "inlineSources": true,
     "noImplicitThis": false,
     "noUnusedLocals": true,
     "stripInternal": true,
@@ -13,12 +12,8 @@
     "strict": false,
     "noEmitOnError": false,
     "skipLibCheck": true,
-    "rootDir": "src",
     "outDir": "dist"
   },
-  "include": [
-    "./src/**/*.ts"
-  ],
   "exclude": [
     "dist",
     "node_modules",

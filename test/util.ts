@@ -53,7 +53,9 @@ export const matchContentTimes = (p: string, matchString: string | RegExp) => {
 }
 
 export const createChildProcess = (moduleFile) => {
-  return fork(moduleFile, ['--require=ts-node/register']);
+  return fork(moduleFile, [], {
+    execArgv: [ '--require=ts-node/register']
+  });
 }
 
 export const getChildProcessPid = (moduleFile) => {
