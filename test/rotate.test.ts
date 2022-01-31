@@ -3,29 +3,24 @@ import * as path from 'path';
 import * as winston from 'winston';
 import * as rimraf from 'rimraf';
 import * as dayjs from 'dayjs';
-
 import * as utc from 'dayjs/plugin/utc';
 dayjs.extend(utc)
+import { promisify } from 'util';
+import { spawn, Thread, Worker } from 'threads';
 
-import { DailyRotateFileTransport as DailyRotateFile } from '../src/rotate';
+import { DailyRotateFileTransport as DailyRotateFile } from '../src/transport/rotate';
 import { MemoryStream } from './memory-stream';
 import { randomString } from './random-string';
 
 function sendLogItem(transport, level, message, meta?, cb?) {
-  const logger = winston.createLogger({
-    transports: [transport]
-  });
-
   transport.on('logged', function () {
     if (cb) {
       cb(null, true);
     }
   });
 
-  logger.info({
-    level: level,
-    message: message
-  });
+  const info = { level: level, message: message };
+  transport.log(winston.format.json().transform(info));
 }
 
 describe('winston/transports/daily-rotate-file', function () {
@@ -36,7 +31,6 @@ describe('winston/transports/daily-rotate-file', function () {
   beforeEach(function () {
     stream = new MemoryStream();
     transport = new DailyRotateFile({
-      json: true,
       stream,
     });
   });
@@ -74,29 +68,6 @@ describe('winston/transports/daily-rotate-file', function () {
       expect(logEntry.level).toEqual('info')
       expect(logEntry.message).toEqual('this message should write to the stream');
       done();
-    });
-  });
-
-  describe('when passed metadata', function () {
-    const circular = {} as any;
-    circular.metadata = circular;
-
-    const params = {
-      no: {},
-      object: {metadata: true},
-      primitive: 'metadata',
-      circular: circular
-    };
-
-    Object.keys(params).forEach(function (param) {
-      it('should accept log messages with ' + param + ' metadata', function (done) {
-        sendLogItem(transport, 'info', 'test log message', params[param], function (err, logged) {
-          expect(err).toBeNull();
-          expect(logged).toBeTruthy();
-          // TODO parse the metadata value to make sure its set properly
-          done();
-        });
-      });
     });
   });
 
@@ -196,5 +167,19 @@ describe('winston/transports/daily-rotate-file', function () {
         transport.close();
       });
     });
+
+    describe('concurrent', () => {
+      it('should not throw EEXIST', async () => {
+        const logDir = path.join(__dirname, 'concurrent-logs');
+        await promisify(rimraf)(logDir);
+        const workers = await Promise.all([
+          spawn(new Worker('./transport.worker.js')),
+          spawn(new Worker('./transport.worker.js')),
+          spawn(new Worker('./transport.worker.js')),
+        ]);
+        await Promise.all(workers.map(worker => worker.run()));
+        await Promise.all(workers.map(worker => Thread.terminate(worker)));
+      })
+    })
   });
 });

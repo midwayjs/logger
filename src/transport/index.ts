@@ -1,5 +1,5 @@
 import TransportStream = require('winston-transport');
-import { ILogger } from './interface';
+import { ILogger } from '../interface';
 
 export interface DelegateTransportOptions {
   delegateLogger: ILogger;

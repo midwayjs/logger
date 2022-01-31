@@ -5,7 +5,7 @@ export { format, transports } from 'winston';
 export { displayCommonMessage, displayLabels } from './format';
 export * from './interface';
 export * from './transport';
-export { EmptyLogger, MidwayBaseLogger, MidwayDelegateLogger } from './logger';
+export { MidwayBaseLogger, MidwayDelegateLogger } from './logger';
 export { MidwayContextLogger } from './contextLogger';
 export { MidwayLoggerContainer } from './container';
 export const loggers = new MidwayLoggerContainer();

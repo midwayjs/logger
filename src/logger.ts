@@ -1,5 +1,5 @@
-import { createLogger, transports, Logger, format } from 'winston';
-import { DailyRotateFileTransport } from './rotate';
+import { transports, format } from 'winston';
+import { DailyRotateFileTransport } from './transport/rotate';
 import {
   DelegateLoggerOptions,
   LoggerLevel,
@@ -14,6 +14,8 @@ import * as os from 'os';
 import { basename, dirname, isAbsolute } from 'path';
 import * as util from 'util';
 import { ORIGIN_ARGS, ORIGIN_ERROR } from './constant';
+import { WinstonLogger } from './winston/logger';
+import { formatLevel } from './util';
 
 const isWindows = os.platform() === 'win32';
 
@@ -25,28 +27,6 @@ export function isPlainObject(value) {
   const prototype = Object.getPrototypeOf(value);
   return prototype === null || prototype === Object.prototype;
 }
-
-type NewLogger = Omit<
-  Logger,
-  | 'log'
-  | 'add'
-  | 'close'
-  | 'remove'
-  | 'write'
-  | 'info'
-  | 'warn'
-  | 'debug'
-  | 'error'
-  | 'verbose'
-  | 'silly'
->;
-
-export const EmptyLogger = createLogger().constructor as unknown as {
-  new (options?: LoggerOptions): IMidwayLogger &
-    NewLogger & {
-      log(...args): any;
-    };
-} & NewLogger;
 
 const midwayLogLevels = {
   none: 0,
@@ -63,7 +43,8 @@ const midwayLogLevels = {
 /**
  *  base logger with console transport and file transport
  */
-export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
+export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
+  level: LoggerLevel;
   consoleTransport;
   fileTransport;
   errTransport;
@@ -109,7 +90,7 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
     );
 
     this.consoleTransport = new transports.Console({
-      level: (options.consoleLevel || options.level || 'silly').toLowerCase(),
+      level: formatLevel(options.consoleLevel || options.level || 'silly'),
       format: format.combine(
         process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true'
           ? format.colorize({
@@ -195,11 +176,9 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
         dirname: this.loggerOptions.dir,
         filename: this.loggerOptions.fileLogName,
         datePattern: this.loggerOptions.fileDatePattern || 'YYYY-MM-DD',
-        level: (
-          this.loggerOptions.fileLevel ||
-          this.loggerOptions.level ||
-          'silly'
-        ).toLowerCase(),
+        level: formatLevel(
+          this.loggerOptions.fileLevel || this.loggerOptions.level || 'silly'
+        ),
         createSymlink: this.loggerOptions.disableFileSymlink !== true,
         symlinkName: this.loggerOptions.fileLogName,
         maxSize: this.loggerOptions.fileMaxSize || '200m',
@@ -254,17 +233,17 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
   }
 
   updateLevel(level: LoggerLevel): void {
-    this.level = level.toLowerCase();
+    this.level = formatLevel(level);
     this.consoleTransport.level = level;
     this.fileTransport.level = level;
   }
 
   updateFileLevel(level: LoggerLevel): void {
-    this.fileTransport.level = level.toLowerCase();
+    this.fileTransport.level = formatLevel(level);
   }
 
   updateConsoleLevel(level: LoggerLevel): void {
-    this.consoleTransport.level = level.toLowerCase();
+    this.consoleTransport.level = formatLevel(level);
   }
 
   updateDefaultLabel(defaultLabel: string): void {

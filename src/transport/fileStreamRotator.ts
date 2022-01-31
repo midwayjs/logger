@@ -8,7 +8,7 @@ import { format, debuglog } from 'util';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import * as assert from 'assert';
-import { debounce } from './util';
+import { debounce } from '../util';
 
 const debug = debuglog('midway-logger');
 const staticFrequency = ['daily', 'test', 's', 'm', 'h', 'custom'];

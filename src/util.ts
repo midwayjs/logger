@@ -1,3 +1,5 @@
+import { LoggerLevel } from './interface';
+
 export function debounce(func: () => void, wait: number, immediate?) {
   let timeout, args, context, timestamp, result;
   if (null == wait) wait = 100;
@@ -47,4 +49,8 @@ export function debounce(func: () => void, wait: number, immediate?) {
   };
 
   return debounced;
+}
+
+export function formatLevel(level: string): LoggerLevel {
+  return level.toLowerCase() as LoggerLevel;
 }
