@@ -1,4 +1,4 @@
-import { FileStreamRotator } from '../src/fileStreamRotator';
+import { FileStreamRotator } from '../src/transport/fileStreamRotator';
 import * as crypto from 'crypto';
 import { writeFileSync, remove, ensureFile, lstat, readdirSync } from 'fs-extra';
 import { join } from 'path';
