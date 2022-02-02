@@ -31,6 +31,10 @@ export const displayCommonMessage = format(
       info.ctx = null;
     }
 
+    if (!info.format) {
+      info.format = null;
+    }
+
     if (!info.LEVEL) {
       info.LEVEL = info.level.toUpperCase();
     }

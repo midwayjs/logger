@@ -964,8 +964,6 @@ describe('/test/index.test.ts', () => {
     contextLogger.debug('hello world');
     contextLogger.warn('hello world');
     contextLogger.error('hello world');
-    contextLogger.log('hello world');
-    contextLogger.log('info', 'hello world');
 
     await removeFileOrDir(logsDir);
   });

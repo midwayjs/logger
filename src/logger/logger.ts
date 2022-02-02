@@ -1,21 +1,24 @@
 import { transports, format } from 'winston';
-import { DailyRotateFileTransport } from './transport/rotate';
+import { DailyRotateFileTransport } from '../transport/rotate';
 import {
-  DelegateLoggerOptions,
   LoggerLevel,
   LoggerOptions,
   IMidwayLogger,
   MidwayTransformableInfo,
   LoggerCustomInfoHandler,
-} from './interface';
-import { DelegateTransport, EmptyTransport } from './transport';
-import { displayLabels, displayCommonMessage } from './format';
+  ChildLoggerOptions,
+  ContextLoggerOptions,
+} from '../interface';
+import { EmptyTransport } from '../transport';
+import { displayLabels, displayCommonMessage } from '../format';
 import * as os from 'os';
 import { basename, dirname, isAbsolute } from 'path';
 import * as util from 'util';
-import { ORIGIN_ARGS, ORIGIN_ERROR } from './constant';
-import { WinstonLogger } from './winston/logger';
-import { formatLevel } from './util';
+import { ORIGIN_ARGS, ORIGIN_ERROR } from '../constant';
+import { WinstonLogger } from '../winston/logger';
+import { formatLevel } from '../util';
+import { MidwayChildLogger } from './child';
+import { MidwayContextLogger } from './contextLogger';
 
 const isWindows = os.platform() === 'win32';
 
@@ -49,7 +52,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   fileTransport;
   errTransport;
   loggerOptions: LoggerOptions;
-  defaultLabel = '';
+  defaultLabel;
   defaultMetadata = {};
   customInfoHandler: LoggerCustomInfoHandler = info => {
     return info;
@@ -61,7 +64,6 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
         levels: midwayLogLevels,
       })
     );
-    this.exitOnError = false;
     if (isWindows) {
       options.disableErrorSymlink = true;
       options.disableFileSymlink = true;
@@ -75,19 +77,12 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
       this.defaultMetadata = this.loggerOptions.defaultMeta;
     }
 
-    if (this.loggerOptions.format) {
-      this.configure({
-        format: this.loggerOptions.format,
-      });
-    } else {
-      this.configure(this.getDefaultLoggerConfigure());
-    }
+    const loggerFormat = this.loggerOptions.format ?? this.getDefaultFormat();
 
-    this.configure(
-      Object.assign({}, this.getDefaultLoggerConfigure(), {
-        format: this.loggerOptions.format,
-      })
-    );
+    this.configure({
+      format: loggerFormat,
+      exitOnError: false,
+    });
 
     this.consoleTransport = new transports.Console({
       level: formatLevel(options.consoleLevel || options.level || 'silly'),
@@ -137,7 +132,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
     this.add(new EmptyTransport());
   }
 
-  log(level, ...args) {
+  protected log(level, ...args) {
     const originArgs = [...args];
     let meta, msg;
     if (args.length > 1 && isPlainObject(args[args.length - 1])) {
@@ -258,34 +253,29 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
     this.customInfoHandler = customInfoHandler;
   }
 
-  getDefaultLoggerConfigure() {
-    const printInfo = this.loggerOptions.printFormat
-      ? this.loggerOptions.printFormat
-      : (info: MidwayTransformableInfo): string => {
-          return `${info.timestamp} ${info.LEVEL} ${info.pid} ${info.labelText}${info.message}`;
-        };
-
-    return {
-      format: format.combine(
-        displayCommonMessage({
-          target: this,
-        }),
-        displayLabels(),
-        format.timestamp({
-          format: 'YYYY-MM-DD HH:mm:ss,SSS',
-        }),
-        format.splat(),
-        format.printf(info => {
-          if (info.ignoreFormat) {
-            return info.message;
-          }
-          const newInfo = this.customInfoHandler(
-            info as MidwayTransformableInfo
-          );
-          return printInfo(newInfo || info);
-        })
-      ),
+  protected getDefaultFormat() {
+    const defaultFormat = (info: MidwayTransformableInfo): string => {
+      return `${info.timestamp} ${info.LEVEL} ${info.pid} ${info.labelText}${info.message}`;
     };
+    return format.combine(
+      displayCommonMessage({
+        target: this,
+      }),
+      displayLabels(),
+      format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss,SSS',
+      }),
+      format.splat(),
+      format.printf(info => {
+        if (info.ignoreFormat) {
+          return info.message;
+        }
+        const newInfo = this.customInfoHandler(info as MidwayTransformableInfo);
+        const printInfo =
+          newInfo.format ?? this.loggerOptions.printFormat ?? defaultFormat;
+        return printInfo(newInfo || (info as MidwayTransformableInfo));
+      })
+    );
   }
 
   getDefaultLabel(): string {
@@ -338,22 +328,22 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   silly(...args) {
     this.log('silly', ...args);
   }
-}
 
-/**
- * framework delegate logger, it can proxy logger output to another logger
- */
-export class MidwayDelegateLogger extends MidwayBaseLogger {
-  constructor(options: DelegateLoggerOptions) {
-    super({
-      disableConsole: true,
-      disableFile: true,
-      disableError: true,
+  getLoggerOptions() {
+    return this.loggerOptions;
+  }
+
+  createChildLogger(options: ChildLoggerOptions = {}) {
+    return new MidwayChildLogger(this, {
+      ...this.getLoggerOptions(),
+      ...options,
     });
-    this.add(
-      new DelegateTransport({
-        delegateLogger: options.delegateLogger,
-      })
-    );
+  }
+
+  createContextLogger<CTX>(ctx: CTX, options: ContextLoggerOptions = {}) {
+    return new MidwayContextLogger(ctx, this, {
+      ...this.getLoggerOptions(),
+      ...options,
+    });
   }
 }
