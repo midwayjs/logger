@@ -11,13 +11,6 @@ export class MidwayChildLogger implements IMidwayChildLogger {
     private readonly options: ChildLoggerOptions
   ) {}
 
-  createChildLogger(options: ChildLoggerOptions = {}): IMidwayChildLogger {
-    return new MidwayChildLogger(
-      this.parentLogger,
-      options ?? this.getLoggerOptions()
-    );
-  }
-
   getConsoleLevel(): LoggerLevel {
     return this.parentLogger.getConsoleLevel();
   }

@@ -41,7 +41,7 @@ export interface IMidwayLogger extends ILogger {
   getLoggerOptions(): LoggerOptions;
 }
 
-export interface IMidwayChildLogger extends ILogger, Pick<IMidwayLogger, 'write' | 'getConsoleLevel' | 'getFileLevel' | 'createChildLogger'> {
+export interface IMidwayChildLogger extends ILogger, Pick<IMidwayLogger, 'write' | 'getConsoleLevel' | 'getFileLevel'> {
   getParentLogger(): IMidwayLogger;
   getLoggerOptions(): ChildLoggerOptions;
 }
