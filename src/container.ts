@@ -4,7 +4,7 @@ import {
   LoggerLevel,
   LoggerOptions,
 } from './interface';
-import { MidwayBaseLogger } from './logger';
+import { MidwayBaseLogger } from './logger/logger';
 import * as util from 'util';
 
 const debug = util.debuglog('midway:debug');

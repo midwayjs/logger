@@ -1,19 +1,24 @@
-import { createLogger, transports, Logger, format } from 'winston';
-import { DailyRotateFileTransport } from './rotate';
+import { transports, format } from 'winston';
+import { DailyRotateFileTransport } from '../transport/rotate';
 import {
-  DelegateLoggerOptions,
   LoggerLevel,
   LoggerOptions,
   IMidwayLogger,
   MidwayTransformableInfo,
   LoggerCustomInfoHandler,
-} from './interface';
-import { DelegateTransport, EmptyTransport } from './transport';
-import { displayLabels, displayCommonMessage } from './format';
+  ChildLoggerOptions,
+  ContextLoggerOptions,
+} from '../interface';
+import { EmptyTransport } from '../transport';
+import { displayLabels, displayCommonMessage } from '../format';
 import * as os from 'os';
 import { basename, dirname, isAbsolute } from 'path';
 import * as util from 'util';
-import { ORIGIN_ARGS, ORIGIN_ERROR } from './constant';
+import { ORIGIN_ARGS, ORIGIN_ERROR } from '../constant';
+import { WinstonLogger } from '../winston/logger';
+import { formatLevel } from '../util';
+import { MidwayChildLogger } from './child';
+import { MidwayContextLogger } from './contextLogger';
 
 const isWindows = os.platform() === 'win32';
 
@@ -25,28 +30,6 @@ export function isPlainObject(value) {
   const prototype = Object.getPrototypeOf(value);
   return prototype === null || prototype === Object.prototype;
 }
-
-type NewLogger = Omit<
-  Logger,
-  | 'log'
-  | 'add'
-  | 'close'
-  | 'remove'
-  | 'write'
-  | 'info'
-  | 'warn'
-  | 'debug'
-  | 'error'
-  | 'verbose'
-  | 'silly'
->;
-
-export const EmptyLogger = createLogger().constructor as unknown as {
-  new (options?: LoggerOptions): IMidwayLogger &
-    NewLogger & {
-      log(...args): any;
-    };
-} & NewLogger;
 
 const midwayLogLevels = {
   none: 0,
@@ -63,12 +46,13 @@ const midwayLogLevels = {
 /**
  *  base logger with console transport and file transport
  */
-export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
+export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
+  level: LoggerLevel;
   consoleTransport;
   fileTransport;
   errTransport;
   loggerOptions: LoggerOptions;
-  defaultLabel = '';
+  defaultLabel;
   defaultMetadata = {};
   customInfoHandler: LoggerCustomInfoHandler = info => {
     return info;
@@ -80,7 +64,6 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
         levels: midwayLogLevels,
       })
     );
-    this.exitOnError = false;
     if (isWindows) {
       options.disableErrorSymlink = true;
       options.disableFileSymlink = true;
@@ -94,22 +77,15 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
       this.defaultMetadata = this.loggerOptions.defaultMeta;
     }
 
-    if (this.loggerOptions.format) {
-      this.configure({
-        format: this.loggerOptions.format,
-      });
-    } else {
-      this.configure(this.getDefaultLoggerConfigure());
-    }
+    const loggerFormat = this.loggerOptions.format ?? this.getDefaultFormat();
 
-    this.configure(
-      Object.assign({}, this.getDefaultLoggerConfigure(), {
-        format: this.loggerOptions.format,
-      })
-    );
+    this.configure({
+      format: loggerFormat,
+      exitOnError: false,
+    });
 
     this.consoleTransport = new transports.Console({
-      level: (options.consoleLevel || options.level || 'silly').toLowerCase(),
+      level: formatLevel(options.consoleLevel || options.level || 'silly'),
       format: format.combine(
         process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true'
           ? format.colorize({
@@ -156,7 +132,7 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
     this.add(new EmptyTransport());
   }
 
-  log(level, ...args) {
+  protected log(level, ...args) {
     const originArgs = [...args];
     let meta, msg;
     if (args.length > 1 && isPlainObject(args[args.length - 1])) {
@@ -195,11 +171,9 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
         dirname: this.loggerOptions.dir,
         filename: this.loggerOptions.fileLogName,
         datePattern: this.loggerOptions.fileDatePattern || 'YYYY-MM-DD',
-        level: (
-          this.loggerOptions.fileLevel ||
-          this.loggerOptions.level ||
-          'silly'
-        ).toLowerCase(),
+        level: formatLevel(
+          this.loggerOptions.fileLevel || this.loggerOptions.level || 'silly'
+        ),
         createSymlink: this.loggerOptions.disableFileSymlink !== true,
         symlinkName: this.loggerOptions.fileLogName,
         maxSize: this.loggerOptions.fileMaxSize || '200m',
@@ -254,17 +228,17 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
   }
 
   updateLevel(level: LoggerLevel): void {
-    this.level = level.toLowerCase();
+    this.level = formatLevel(level);
     this.consoleTransport.level = level;
     this.fileTransport.level = level;
   }
 
   updateFileLevel(level: LoggerLevel): void {
-    this.fileTransport.level = level.toLowerCase();
+    this.fileTransport.level = formatLevel(level);
   }
 
   updateConsoleLevel(level: LoggerLevel): void {
-    this.consoleTransport.level = level.toLowerCase();
+    this.consoleTransport.level = formatLevel(level);
   }
 
   updateDefaultLabel(defaultLabel: string): void {
@@ -279,34 +253,30 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
     this.customInfoHandler = customInfoHandler;
   }
 
-  getDefaultLoggerConfigure() {
-    const printInfo = this.loggerOptions.printFormat
-      ? this.loggerOptions.printFormat
-      : (info: MidwayTransformableInfo): string => {
-          return `${info.timestamp} ${info.LEVEL} ${info.pid} ${info.labelText}${info.message}`;
-        };
-
-    return {
-      format: format.combine(
-        displayCommonMessage({
-          target: this,
-        }),
-        displayLabels(),
-        format.timestamp({
-          format: 'YYYY-MM-DD HH:mm:ss,SSS',
-        }),
-        format.splat(),
-        format.printf(info => {
-          if (info.ignoreFormat) {
-            return info.message;
-          }
-          const newInfo = this.customInfoHandler(
-            info as MidwayTransformableInfo
-          );
-          return printInfo(newInfo || info);
-        })
-      ),
+  protected getDefaultFormat() {
+    const defaultFormat = (info: MidwayTransformableInfo): string => {
+      return `${info.timestamp} ${info.LEVEL} ${info.pid} ${info.labelText}${info.message}`;
     };
+    return format.combine(
+      displayCommonMessage({
+        target: this,
+      }),
+      displayLabels(),
+      format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss,SSS',
+      }),
+      format.splat(),
+      format.printf(info => {
+        if (info.ignoreFormat) {
+          return info.message;
+        }
+        const newInfo = this.customInfoHandler(info as MidwayTransformableInfo);
+        const printInfo =
+          newInfo.format ?? this.loggerOptions.printFormat ?? defaultFormat;
+        delete newInfo['format'];
+        return printInfo(newInfo || (info as MidwayTransformableInfo));
+      })
+    );
   }
 
   getDefaultLabel(): string {
@@ -359,22 +329,22 @@ export class MidwayBaseLogger extends EmptyLogger implements IMidwayLogger {
   silly(...args) {
     this.log('silly', ...args);
   }
-}
 
-/**
- * framework delegate logger, it can proxy logger output to another logger
- */
-export class MidwayDelegateLogger extends MidwayBaseLogger {
-  constructor(options: DelegateLoggerOptions) {
-    super({
-      disableConsole: true,
-      disableFile: true,
-      disableError: true,
+  getLoggerOptions() {
+    return this.loggerOptions;
+  }
+
+  createChildLogger(options: ChildLoggerOptions = {}) {
+    return new MidwayChildLogger(this, {
+      ...this.getLoggerOptions(),
+      ...options,
     });
-    this.add(
-      new DelegateTransport({
-        delegateLogger: options.delegateLogger,
-      })
-    );
+  }
+
+  createContextLogger<CTX>(ctx: CTX, options: ContextLoggerOptions = {}) {
+    return new MidwayContextLogger(ctx, this, {
+      ...this.getLoggerOptions(),
+      ...options,
+    });
   }
 }

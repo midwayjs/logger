@@ -1,4 +1,4 @@
-import { FileStreamRotator } from '../src/fileStreamRotator';
+import { FileStreamRotator } from '../src/transport/fileStreamRotator';
 import * as crypto from 'crypto';
 import { writeFileSync, remove, ensureFile, lstat, readdirSync } from 'fs-extra';
 import { join } from 'path';
@@ -22,6 +22,7 @@ describe('/test/stream-rotate.test.ts', () => {
       end_stream: false,
       utc: true,
       extension: '.logs',
+      audit_hash_type: 'sha256',
     });
 
     rotatingLogStream.on('error', function (err) {
@@ -75,66 +76,65 @@ describe('/test/stream-rotate.test.ts', () => {
     })
   })
 
-  it('test minute-test',  async () => {
+  it('test minute-test', async () => {
     const rotator = new FileStreamRotator();
     const rotatingLogStream = rotator.getStream({
-      filename: "logs/1m/testlog-%DATE%",
-      frequency: "1m",
-      date_format: "YYYY-MM-DD.HH.mm",
-      size: "500k",
-      max_logs: "10",
-      audit_file: "/tmp/audit.json",
+      filename: 'logs/1m/testlog-%DATE%',
+      frequency: '1m',
+      date_format: 'YYYY-MM-DD.HH.mm',
+      size: '100k',
+      max_logs: '10',
+      audit_file: '/tmp/audit.json',
       end_stream: false,
       utc: true,
-      extension: ".log",
+      extension: '.log',
       create_symlink: true,
-      symlink_name: "tail.log"
+      symlink_name: 'tail.log'
     });
 
-    rotatingLogStream.on("error", function () {
-      console.log(Date.now(), Date(), "stream error", arguments)
-    })
+    rotatingLogStream.on('error', function () {
+      console.log(Date.now(), Date(), 'stream error', arguments);
+    });
 
 
-    rotatingLogStream.on("close", function () {
-      console.log(Date.now(), Date(), "stream closed")
-    })
+    rotatingLogStream.on('close', function () {
+      console.log(Date.now(), Date(), 'stream closed');
+    });
 
-    rotatingLogStream.on("finish", function () {
-      console.log(Date.now(), Date(), "stream finished")
-    })
+    rotatingLogStream.on('finish', function () {
+      console.log(Date.now(), Date(), 'stream finished');
+    });
 
-    rotatingLogStream.on("rotate", function (oldFile, newFile) {
-      console.log(Date.now(), Date(), "stream rotated", oldFile, newFile);
-    })
+    rotatingLogStream.on('rotate', function (oldFile, newFile) {
+      console.log(Date.now(), Date(), 'stream rotated', oldFile, newFile);
+    });
 
-    rotatingLogStream.on("open", function (fd) {
-      console.log(Date.now(), Date(), "stream open", fd);
-    })
+    rotatingLogStream.on('open', function (fd) {
+      console.log(Date.now(), Date(), 'stream open', fd);
+    });
 
-    rotatingLogStream.on("new", function (newFile) {
-      console.log(Date.now(), Date(), "stream new", newFile);
-    })
+    rotatingLogStream.on('new', function (newFile) {
+      console.log(Date.now(), Date(), 'stream new', newFile);
+    });
 
-    rotatingLogStream.on("logRemoved", function (newFile) {
-      console.log(Date.now(), Date(), "stream logRemoved", newFile);
-    })
+    rotatingLogStream.on('logRemoved', function (newFile) {
+      console.log(Date.now(), Date(), 'stream logRemoved', newFile);
+    });
 
     await new Promise<void>(resolve => {
       var counter = 0;
       var i = setInterval(function () {
         counter++;
-        rotatingLogStream.write(Date() + "\t" + "testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890\n")
+        rotatingLogStream.write(Date() + '\t' + 'testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890\n');
         // rotatingLogStream1.write(Date() + "\t" + "testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890\n")
         if (counter == 5000) {
           clearInterval(i);
-          rotatingLogStream.end("end\n");
+          rotatingLogStream.end('end\n');
           // rotatingLogStream1.end("end\n");
           resolve();
         }
       }, 10);
     });
-
   });
 
   it('should test large', async () => {
@@ -310,5 +310,72 @@ describe('/test/stream-rotate.test.ts', () => {
 
     const files = readdirSync(join(__dirname, 'logs'))
     expect(files.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('should test rotate on size without date', function () {
+    const rotator = new FileStreamRotator();
+    const rotatingLogStream = rotator.getStream({
+      filename: 'logs/nodate/logfile',
+      size: '50k',
+      max_logs: '5',
+      audit_file: 'logs/audit-nodate.json',
+      end_stream: false,
+      extension: '.log'
+    });
+
+    rotatingLogStream.on('error', function (err) {
+      console.log(Date.now(), Date(), 'stream error', err);
+      process.exit();
+    });
+
+    rotatingLogStream.on('close', function () {
+      console.log(Date.now(), Date(), 'stream closed');
+    });
+
+    rotatingLogStream.on('finish', function () {
+      console.log(Date.now(), Date(), 'stream finished');
+    });
+
+    rotatingLogStream.on('rotate', function (oldFile, newFile) {
+      console.log(Date.now(), Date(), 'stream rotated', oldFile, newFile);
+    });
+
+    rotatingLogStream.on('open', function (fd) {
+      console.log(Date.now(), Date(), 'stream open', fd);
+    });
+
+    rotatingLogStream.on('new', function (newFile) {
+      console.log(Date.now(), Date(), 'stream new', newFile);
+    });
+
+    rotatingLogStream.on('addWatcher', function (newLog) {
+      console.log(Date.now(), Date(), 'stream add watcher', newLog);
+    });
+
+// console.log(rotatingLogStream.on, rotatingLogStream.end, rotatingLogStream)
+
+    let counter = 0;
+    let i = setInterval(function () {
+      counter++;
+      // rotatingLogStream.write(Date() + "\ttesting 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890-testing 1234567890\n")
+      rotatingLogStream.write(Date() + 'ニューバランスの100年を超える長い歴史\n');
+      // if(counter == 2000){
+      if (counter == 400) {
+        clearInterval(i);
+        console.log(Date() + '\tEND STREAM');
+        rotatingLogStream.end('end\n');
+        return;
+      }
+
+      //*
+      rotatingLogStream.write(Date() + '\t');
+      for (let y = 0; y < 400; y++) {
+        // console.log(i + " ")
+        // rotatingLogStream.write(y + ": " + Date.now() + " >> ");
+        rotatingLogStream.write('適: ' + Date.now() + ' >> ');
+      }
+      // */
+      rotatingLogStream.write('\n');
+    }, 10);
   });
 })

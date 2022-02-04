@@ -1,11 +1,10 @@
 import * as cluster from 'cluster';
-import { FileStreamRotator } from '../../src/fileStreamRotator';
+import { FileStreamRotator } from '../../src/transport/fileStreamRotator';
 import { join } from 'path';
 import * as crypto from 'crypto';
 import { sleep } from '../util';
 
 (async () => {
-
   if (cluster['isMaster']) {
     console.log(`Master ${process.pid} is running`);
     const pidList = [];

@@ -33,24 +33,41 @@ export interface IMidwayLogger extends ILogger {
   getDefaultLabel(): string;
   getDefaultMeta(): Record<string, unknown>;
   write(...args): boolean;
-  add(transport: any): any;
-  remove(transport: any): any;
+  add(transport: any): void;
+  remove(transport: any): void;
   close(): any;
+  createChildLogger(options?: ChildLoggerOptions): IMidwayChildLogger;
+  createContextLogger<CTX>(ctx: CTX, options?: ContextLoggerOptions): IMidwayContextLogger<CTX>;
+  getLoggerOptions(): LoggerOptions;
+}
+
+export interface IMidwayChildLogger extends ILogger, Pick<IMidwayLogger, 'write' | 'getConsoleLevel' | 'getFileLevel' | 'createContextLogger'> {
+  getParentLogger(): IMidwayLogger;
+  getLoggerOptions(): ChildLoggerOptions;
+}
+
+export interface IMidwayContextLogger<CTX> extends ILogger {
+  getContext(): CTX;
 }
 
 export type LoggerLevel = 'all' | 'silly' | 'debug' | 'info' | 'warn' | 'error' | 'none' | 'ALL' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE' | 'trace' | 'TRACE';
+export type LoggerContextFormat = (info: MidwayTransformableInfo, logger?: IMidwayLogger) => string;
 
 export interface LoggerOptions {
   format?: logform.Format;
   level?: LoggerLevel;
   defaultMeta?: object;
-  printFormat?: (info: any) => string;
+  printFormat?: LoggerContextFormat;
+  contextFormat?: LoggerContextFormat;
   dir?: string;
   errorDir?: string;
   aliasName?: string;
   fileLogName?: string;
   errorLogName?: string;
-  defaultLabel?: string;
+  /**
+   * @deprecated
+   */
+  defaultLabel?: string | LoggerContextFormat;
   disableConsole?: boolean;
   disableFile?: boolean;
   disableError?: boolean;
@@ -69,6 +86,10 @@ export interface LoggerOptions {
   errDatePattern?: string;
 }
 
+export type ChildLoggerOptions = Pick<LoggerOptions, 'printFormat'>;
+
+export type ContextLoggerOptions = Pick<LoggerOptions, 'contextFormat'>;
+
 export interface DelegateLoggerOptions {
   delegateLogger: ILogger;
 }
@@ -86,6 +107,7 @@ export interface MidwayTransformableInfo {
   defaultLabel: string;
   originError?: Error;
   stack?: string;
+  format?: LoggerContextFormat;
 }
 
 export interface GeneralDailyRotateFileTransportOptions extends TransportStream.TransportStreamOptions {

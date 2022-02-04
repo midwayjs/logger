@@ -8,7 +8,7 @@ import { format, debuglog } from 'util';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import * as assert from 'assert';
-import { debounce } from './util';
+import { debounce } from '../util';
 
 const debug = debuglog('midway-logger');
 const staticFrequency = ['daily', 'test', 's', 'm', 'h', 'custom'];
@@ -64,12 +64,13 @@ const _checkDailyAndTest = function (freqType) {
  * @param file.hash
  * @param file.name
  * @param file.date
+ * @param file.hashType
  */
 function removeFile(file) {
   if (
     file.hash ===
     crypto
-      .createHash('md5')
+      .createHash(file.hashType)
       .update(file.name + 'LOG_FILE' + file.date)
       .digest('hex')
   ) {
@@ -129,7 +130,13 @@ const mkDirForFile = function (pathWithFile) {
   _path.split(path.sep).reduce((fullPath, folder) => {
     fullPath += folder + path.sep;
     if (!fs.existsSync(fullPath)) {
-      fs.mkdirSync(fullPath);
+      try {
+        fs.mkdirSync(fullPath);
+      } catch (e) {
+        if (e.code !== 'EEXIST') {
+          throw e;
+        }
+      }
     }
     return fullPath;
   }, '');
@@ -297,11 +304,12 @@ export class FileStreamRotator {
    * @param {Number} audit.keep.amount
    * @param {String} audit.auditLog
    * @param {Array} audit.files
+   * @param {String} audit.hashType
    */
   writeAuditLog(audit) {
     try {
       mkDirForFile(audit.auditLog);
-      fs.writeFileSync(audit.auditLog, JSON.stringify(audit, null, 4));
+      fs.writeFileSync(audit.auditLog, JSON.stringify(audit, null, 2));
     } catch (e) {
       debug(
         new Date().toLocaleString(),
@@ -321,6 +329,7 @@ export class FileStreamRotator {
    * @param {Boolean} audit.keep.days
    * @param {Number} audit.keep.amount
    * @param {String} audit.auditLog
+   * @param {String} audit.hashType
    * @param {Array} audit.files
    * @param {EventEmitter} stream
    */
@@ -339,7 +348,7 @@ export class FileStreamRotator {
         date: time,
         name: logfile,
         hash: crypto
-          .createHash('md5')
+          .createHash(audit.hashType)
           .update(logfile + 'LOG_FILE' + time)
           .digest('hex'),
       });
@@ -352,6 +361,7 @@ export class FileStreamRotator {
           if (file.date > oldestDate) {
             return true;
           }
+          file.hashType = audit.hashType;
           removeFile(file);
           stream.emit('logRemoved', file);
           return false;
@@ -361,6 +371,7 @@ export class FileStreamRotator {
         const filesToKeep = audit.files.splice(-audit.keep.amount);
         if (audit.files.length > 0) {
           audit.files.filter(file => {
+            file.hashType = audit.hashType;
             removeFile(file);
             stream.emit('logRemoved', file);
             return false;
@@ -386,7 +397,7 @@ export class FileStreamRotator {
    * @param options.audit_file
    * @param options.file_options
    * @param options.utc
-   * @param options.extension File extension to be added at the end of the filename
+   * @param options.extension
    * @param options.create_symlink
    * @param options.symlink_name
    * @returns {Object} stream
@@ -397,6 +408,9 @@ export class FileStreamRotator {
     size?: string;
     max_logs?: number | string;
     end_stream?: boolean;
+    /**
+     * File extension to be added at the end of the filename
+     */
     extension?: string;
     create_symlink?: boolean;
     date_format?: string;
@@ -404,6 +418,10 @@ export class FileStreamRotator {
     symlink_name?: string;
     utc?: boolean;
     file_options?: any;
+    /**
+     * Hash to be used to add to the audit log (md5, sha256)
+     */
+    audit_hash_type?: string;
   }) {
     let frequencyMetaData = null;
     let curDate = null;
@@ -419,6 +437,11 @@ export class FileStreamRotator {
       options.audit_file,
       options.filename
     );
+
+    if (auditLog != null) {
+      auditLog.hashType =
+        options.audit_hash_type !== undefined ? options.audit_hash_type : 'md5';
+    }
 
     let fileSize = null;
     let fileCount = 0;
@@ -562,16 +585,15 @@ export class FileStreamRotator {
 
       stream.write = (str, encoding) => {
         resetCurLogSize();
-        const newDate = this.getDate(
-          frequencyMetaData,
-          dateFormat,
-          options.utc
-        );
+        const newDate = frequencyMetaData
+          ? this.getDate(frequencyMetaData, dateFormat, options.utc)
+          : curDate;
         if (
           (curDate && newDate !== curDate) ||
           (fileSize && curSize > fileSize)
         ) {
-          let newLogfile = filename + (curDate ? '.' + newDate : '');
+          let newLogfile =
+            filename + (curDate && frequencyMetaData ? '.' + newDate : '');
           if (filename.match(/%DATE%/) && curDate) {
             newLogfile = filename.replace(/%DATE%/g, newDate);
           }

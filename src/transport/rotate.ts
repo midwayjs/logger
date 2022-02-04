@@ -9,7 +9,7 @@ import { MESSAGE } from 'triple-beam';
 import { PassThrough } from 'stream';
 import Transport = require('winston-transport');
 import { FileStreamRotator } from './fileStreamRotator';
-import { GeneralDailyRotateFileTransportOptions } from './interface';
+import { GeneralDailyRotateFileTransportOptions } from '../interface';
 
 const loggerDefaults = {
   json: false,
