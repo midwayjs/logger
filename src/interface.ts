@@ -41,7 +41,7 @@ export interface IMidwayLogger extends ILogger {
   getLoggerOptions(): LoggerOptions;
 }
 
-export interface IMidwayChildLogger extends ILogger, Pick<IMidwayLogger, 'write' | 'getConsoleLevel' | 'getFileLevel'> {
+export interface IMidwayChildLogger extends ILogger, Pick<IMidwayLogger, 'write' | 'getConsoleLevel' | 'getFileLevel' | 'createContextLogger'> {
   getParentLogger(): IMidwayLogger;
   getLoggerOptions(): ChildLoggerOptions;
 }
@@ -64,6 +64,9 @@ export interface LoggerOptions {
   aliasName?: string;
   fileLogName?: string;
   errorLogName?: string;
+  /**
+   * @deprecated
+   */
   defaultLabel?: string | LoggerContextFormat;
   disableConsole?: boolean;
   disableFile?: boolean;
@@ -83,9 +86,9 @@ export interface LoggerOptions {
   errDatePattern?: string;
 }
 
-export type ChildLoggerOptions = Pick<LoggerOptions, 'defaultLabel' | 'printFormat'>;
+export type ChildLoggerOptions = Pick<LoggerOptions, 'printFormat'>;
 
-export type ContextLoggerOptions = Pick<LoggerOptions, 'defaultLabel' | 'contextFormat'>;
+export type ContextLoggerOptions = Pick<LoggerOptions, 'contextFormat'>;
 
 export interface DelegateLoggerOptions {
   delegateLogger: ILogger;

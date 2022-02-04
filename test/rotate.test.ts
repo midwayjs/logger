@@ -5,12 +5,12 @@ import * as rimraf from 'rimraf';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 dayjs.extend(utc)
-import { promisify } from 'util';
 import { spawn, Thread, Worker } from 'threads';
 
 import { DailyRotateFileTransport as DailyRotateFile } from '../src/transport/rotate';
 import { MemoryStream } from './memory-stream';
 import { randomString } from './random-string';
+import { removeFileOrDir } from './util';
 
 function sendLogItem(transport, level, message, meta?, cb?) {
   transport.on('logged', function () {
@@ -171,7 +171,7 @@ describe('winston/transports/daily-rotate-file', function () {
     describe('concurrent', () => {
       it('should not throw EEXIST', async () => {
         const logDir = path.join(__dirname, 'concurrent-logs');
-        await promisify(rimraf)(logDir);
+        await removeFileOrDir(logDir)
         const workers = await Promise.all([
           spawn(new Worker('./transport.worker.js')),
           spawn(new Worker('./transport.worker.js')),
@@ -179,6 +179,8 @@ describe('winston/transports/daily-rotate-file', function () {
         ]);
         await Promise.all(workers.map(worker => worker.run()));
         await Promise.all(workers.map(worker => Thread.terminate(worker)));
+
+        await removeFileOrDir(logDir)
       })
     })
   });

@@ -273,6 +273,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
         const newInfo = this.customInfoHandler(info as MidwayTransformableInfo);
         const printInfo =
           newInfo.format ?? this.loggerOptions.printFormat ?? defaultFormat;
+        delete newInfo['format'];
         return printInfo(newInfo || (info as MidwayTransformableInfo));
       })
     );

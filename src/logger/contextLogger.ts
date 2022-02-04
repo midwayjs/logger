@@ -1,15 +1,20 @@
 import {
   ContextLoggerOptions,
   ILogger,
+  IMidwayChildLogger,
   IMidwayContextLogger,
 } from '../interface';
 
 export class MidwayContextLogger<CTX> implements IMidwayContextLogger<CTX> {
   constructor(
     protected readonly ctx: CTX,
-    protected readonly appLogger: ILogger,
+    protected readonly appLogger: ILogger | IMidwayChildLogger,
     protected readonly options: ContextLoggerOptions = {}
-  ) {}
+  ) {
+    if ('getParentLogger' in this.appLogger) {
+      this.appLogger = this.appLogger.getParentLogger();
+    }
+  }
 
   protected log(...args) {
     if (!['debug', 'info', 'warn', 'error'].includes(args[0])) {

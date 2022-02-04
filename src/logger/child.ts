@@ -1,9 +1,11 @@
 import {
   ChildLoggerOptions,
+  ContextLoggerOptions,
   IMidwayChildLogger,
   IMidwayLogger,
   LoggerLevel,
 } from '../interface';
+import { MidwayContextLogger } from './contextLogger';
 
 export class MidwayChildLogger implements IMidwayChildLogger {
   constructor(
@@ -11,39 +13,58 @@ export class MidwayChildLogger implements IMidwayChildLogger {
     private readonly options: ChildLoggerOptions
   ) {}
 
-  getConsoleLevel(): LoggerLevel {
+  public getConsoleLevel(): LoggerLevel {
     return this.parentLogger.getConsoleLevel();
   }
 
-  getFileLevel(): LoggerLevel {
+  public getFileLevel(): LoggerLevel {
     return this.parentLogger.getFileLevel();
   }
 
-  write(...args): boolean {
+  public write(...args): boolean {
     return this.parentLogger.write(...args);
   }
 
-  debug(msg: any, ...args: any[]): void {
-    this.parentLogger.write(...args);
+  public debug(...args) {
+    this.transformLog('debug', args);
   }
 
-  error(msg: any, ...args: any[]): void {
-    this.parentLogger.write(...args);
+  public info(...args) {
+    this.transformLog('info', args);
   }
 
-  info(msg: any, ...args: any[]): void {
-    this.parentLogger.write(...args);
+  public warn(...args) {
+    this.transformLog('warn', args);
   }
 
-  warn(msg: any, ...args: any[]): void {
-    this.parentLogger.write(...args);
+  public error(...args) {
+    this.transformLog('error', args);
   }
 
-  getParentLogger(): IMidwayLogger {
+  public getParentLogger(): IMidwayLogger {
     return this.parentLogger;
   }
 
-  getLoggerOptions(): ChildLoggerOptions {
+  public getLoggerOptions(): ChildLoggerOptions {
     return this.options;
+  }
+
+  public createContextLogger<CTX>(
+    ctx: CTX,
+    options: ContextLoggerOptions = {}
+  ) {
+    return new MidwayContextLogger(ctx, this, {
+      ...this.getLoggerOptions(),
+      ...options,
+    });
+  }
+
+  private transformLog(level, args) {
+    return this.parentLogger[level].apply(this.parentLogger, [
+      ...args,
+      {
+        format: this.options.printFormat,
+      },
+    ]);
   }
 }

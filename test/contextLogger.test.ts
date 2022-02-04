@@ -1,4 +1,4 @@
-import { clearAllLoggers, createLogger, IMidwayLogger, MidwayContextLogger } from '../src';
+import { clearAllLoggers, createLogger, IMidwayLogger, LoggerOptions, MidwayContextLogger } from '../src';
 import { join } from 'path';
 import { matchContentTimes, removeFileOrDir, sleep } from './util';
 
@@ -63,6 +63,157 @@ describe('/test/contextLogger.test.ts', function () {
         'custom data abc hello world'
       )
     ).toEqual(2);
+
+    await removeFileOrDir(logsDir);
+  });
+
+  it('should test create child logger', async () => {
+    clearAllLoggers();
+    const logsDir = join(__dirname, 'logs');
+    await removeFileOrDir(logsDir);
+    const loggerOptions = {
+      dir: logsDir,
+      fileLogName: 'test-logger.log',
+      disableError: true,
+      printFormat: info => {
+        return info.message;
+      },
+      level: 'warn',
+      consoleLevel: 'debug'
+    } as LoggerOptions;
+    const logger = createLogger<IMidwayLogger>('testLogger', loggerOptions);
+
+    const child = logger.createChildLogger();
+    expect(child.getParentLogger()).toEqual(logger);
+    expect(child.getFileLevel()).toEqual('warn');
+    expect(child.getConsoleLevel()).toEqual('debug');
+    expect(child.getLoggerOptions()).toEqual(loggerOptions);
+
+    child.debug('111111');
+    child.info('111111');
+    child.warn('111111');
+    child.error('111111');
+
+    await sleep();
+
+    expect(
+      matchContentTimes(
+        join(logsDir, 'test-logger.log'),
+        '111111'
+      )
+    ).toEqual(2);
+
+    await removeFileOrDir(logsDir);
+  });
+
+  it('should test create child logger with custom format', async () => {
+    clearAllLoggers();
+    const logsDir = join(__dirname, 'logs');
+    await removeFileOrDir(logsDir);
+    const loggerOptions = {
+      dir: logsDir,
+      fileLogName: 'test-logger.log',
+      disableError: true,
+      printFormat: info => {
+        return info.message;
+      },
+      level: 'warn',
+      consoleLevel: 'debug'
+    } as LoggerOptions;
+    const logger = createLogger<IMidwayLogger>('testLogger', loggerOptions);
+
+    const child = logger.createChildLogger({
+      printFormat: info => {
+        return `child ${info.message}`;
+      }
+    });
+
+    logger.warn('111111')
+
+    child.debug('111111');
+    child.info('111111');
+    child.warn('111111');
+    child.error('111111');
+
+    await sleep();
+
+    expect(
+      matchContentTimes(
+        join(logsDir, 'test-logger.log'),
+        'child 111111'
+      )
+    ).toEqual(2);
+
+    expect(
+      matchContentTimes(
+        join(logsDir, 'test-logger.log'),
+        '111111'
+      )
+    ).toEqual(3);
+
+    await removeFileOrDir(logsDir);
+  });
+
+  it('should test create context logger from child', async () => {
+    clearAllLoggers();
+    const logsDir = join(__dirname, 'logs');
+    await removeFileOrDir(logsDir);
+    const loggerOptions = {
+      dir: logsDir,
+      fileLogName: 'test-logger.log',
+      disableError: true,
+      printFormat: info => {
+        return info.message;
+      },
+      level: 'warn',
+      consoleLevel: 'debug'
+    } as LoggerOptions;
+    const logger = createLogger<IMidwayLogger>('testLogger', loggerOptions);
+
+    const child = logger.createChildLogger({
+      printFormat: info => {
+        return `child ${info.message}`;
+      }
+    });
+
+    const ctx = { data: 'custom data' };
+    const contextLogger = child.createContextLogger(ctx, {
+      contextFormat: info => {
+        return `ctx ${info.message}`;
+      }
+    });
+
+    logger.warn('111111')
+
+    child.info('111111');
+    child.warn('111111');
+    child.error('111111');
+
+    contextLogger.info('111111');
+    contextLogger.warn('111111');
+
+    await sleep();
+
+    expect(
+      matchContentTimes(
+        join(logsDir, 'test-logger.log'),
+        'child 111111'
+      )
+    ).toEqual(2);
+
+    expect(
+      matchContentTimes(
+        join(logsDir, 'test-logger.log'),
+        '111111'
+      )
+    ).toEqual(4);
+
+    expect(
+      matchContentTimes(
+        join(logsDir, 'test-logger.log'),
+        'ctx 111111'
+      )
+    ).toEqual(1);
 
     await removeFileOrDir(logsDir);
   });
