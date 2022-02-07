@@ -55,6 +55,9 @@ export class MidwayContextLogger<CTX> implements IMidwayContextLogger<CTX> {
     ]);
   }
 
+  /**
+   * @deprecated
+   */
   protected formatContextLabel() {
     return '';
   }
