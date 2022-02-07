@@ -26,6 +26,11 @@ import { readFileSync, writeFileSync } from 'fs';
 import * as os from 'os';
 
 describe('/test/index.test.ts', () => {
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should test logger output format', function () {
     const logger = createConsoleLogger(
       'globalOutputConsoleLogger'
@@ -500,7 +505,7 @@ describe('/test/index.test.ts', () => {
     await removeFileOrDir(logsDir);
   });
 
-  it('should create logger use different options', async () => {
+  it.skip('should create logger use different options', async () => {
     clearAllLoggers();
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);

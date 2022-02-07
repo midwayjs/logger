@@ -1,6 +1,5 @@
 # @midwayjs/logger
 
-[![Package Quality](http://npm.packagequality.com/shield/@midwayjs/logger.svg)](http://packagequality.com/#?package=@midwayjs/logger)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/midwayjs/midway/pulls)
 
 @midwayjs/logger is a log module extended based on winston, which is suitable for log output under a single process, and supports multiple formats and customizations.
@@ -101,7 +100,7 @@ const logger = loggers.createLogger('logger', {
 });
 ```
 
-info is a winston metadata we called 'MidwayTransformableInfo' and include some [default value](https://github.com/midwayjs/logger/blob/main/src/interface.ts#L248);
+info is a winston metadata we called 'MidwayTransformableInfo' and include some [default value](https://github.com/midwayjs/logger/blob/main/src/interface.ts#L265);
 
 
 ## Logger Options
