@@ -1,4 +1,14 @@
 
+2.15.0 / 2022-02-07
+===================
+
+  * chore: fix test case (#23)
+  * chore(deps): update dependency jest to v27.5.0 (#22)
+  * feat: add json logger
+  * chore(deps): pin dependency threads to 1.7.0 (#21)
+  * feat: support context format (#19)
+  * chore(deps): update dependency @types/node to v16.11.22 (#20)
+
 2.14.2 / 2022-01-25
 ===================
 
