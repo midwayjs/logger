@@ -167,7 +167,7 @@ describe('/test/json.test.ts', function () {
     const logger = createLogger<IMidwayLogger>('testLogger', loggerOptions);
 
     const child = logger.createChildLogger({
-      printFormat: info => {
+      format: info => {
         return `child ${info.message}`;
       },
       jsonFormat: (info, meta) => {
@@ -223,7 +223,7 @@ describe('/test/json.test.ts', function () {
       dir: logsDir,
       fileLogName: 'test-logger.log',
       enableError: false,
-      printFormat: info => {
+      format: info => {
         return info.message;
       },
       level: 'warn',
@@ -236,7 +236,7 @@ describe('/test/json.test.ts', function () {
     const logger = createLogger<IMidwayLogger>('testLogger', loggerOptions);
 
     const child = logger.createChildLogger({
-      printFormat: info => {
+      format: info => {
         return `child ${info.message}`;
       },
       jsonFormat: (info, meta) => {
