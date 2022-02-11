@@ -1,4 +1,13 @@
 
+2.16.0 / 2022-02-11
+===================
+
+  * feat: add audit dir options (#27)
+  * chore(deps): update dependency jest to v27.5.1 (#25)
+  * chore(deps): update dependency @types/node to v16.11.24 (#26)
+  * chore(deps): update dependency ts-node to v10.5.0 (#24)
+  * chore: upgrade to 2.15.0
+
 2.15.0 / 2022-02-07
 ===================
 
