@@ -100,7 +100,10 @@ export class DailyRotateFileTransport extends Transport {
         end_stream: true,
         audit_file: options.auditFile
           ? options.auditFile
-          : path.join(this.dirname, '.' + hash(options) + '-audit.json'),
+          : path.join(
+              options.auditFileDir || this.dirname,
+              '.' + hash(options) + '-audit.json'
+            ),
         file_options: options.options ? options.options : { flags: 'a' },
         utc: options.utc ? options.utc : false,
         extension: options.extension ? options.extension : '',

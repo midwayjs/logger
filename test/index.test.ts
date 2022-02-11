@@ -22,7 +22,7 @@ import {
   getCurrentDateString,
 } from './util';
 import { EggLogger } from 'egg-logger';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync } from 'fs';
 import * as os from 'os';
 
 describe('/test/index.test.ts', () => {
@@ -1130,5 +1130,28 @@ describe('/test/index.test.ts', () => {
     const err2 = new Error('abc2');
     logger.info('abc', err2);
     expect(fn.mock.calls[2][0].originError).toEqual(err2);
+  });
+
+  it('should test change audit file logs', async () => {
+    clearAllLoggers();
+    const logsDir = join(__dirname, 'logs');
+    await removeFileOrDir(logsDir);
+
+    const logger = createFileLogger('file', {
+      dir: logsDir,
+      fileLogName: 'test-logger.log',
+      auditFileDir: join(logsDir, 'tmp'),
+      enableJSON: true,
+    });
+
+    logger.info('file logger');
+    logger.info('file logger1');
+    logger.error('file logger2');
+    await sleep();
+
+    const dir = readdirSync(join(logsDir, 'tmp'));
+    expect(dir.length).toEqual(2);
+
+    await removeFileOrDir(logsDir);
   });
 });

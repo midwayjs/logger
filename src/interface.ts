@@ -158,7 +158,10 @@ export interface LoggerOptions {
   disableJSONSymlink?: boolean;
   /**
    * Maximum file size for file, error and json logger
-   * Maximum size of the file after which it will rotate. This can be a number of bytes, or units of kb, mb, and gb. If using the units, add 'k', 'm', or 'g' as the suffix. The units need to directly follow the number.
+   * Maximum size of the file after which it will rotate.
+   * This can be a number of bytes, or units of kb, mb, and gb.
+   * If using the units, add 'k', 'm', or 'g' as the suffix.
+   * The units need to directly follow the number.
    * default is 200m
    */
   maxSize?: string;
@@ -176,7 +179,12 @@ export interface LoggerOptions {
   jsonMaxSize?: string;
 
   /**
-   * Maximum number of logs to keep.  This can be a number of files or number of days. If using days, add 'd' as the suffix. It uses auditFile to keep track of the log files in a json format. It won't delete any file not contained in it. It can be a number of files or number of days
+   * Maximum number of logs to keep.
+   * This can be a number of files or number of days.
+   * If using days, add 'd' as the suffix.
+   * It uses auditFile to keep track of the log files in a json format.
+   * It won't delete any file not contained in it.
+   * It can be a number of files or number of days
    * default is 31d
    */
   maxFiles?: number | string;
@@ -210,7 +218,9 @@ export interface LoggerOptions {
   jsonZippedArchive?: boolean;
 
   /**
-   * A string representing the moment.js date format to be used for rotating. The meta characters used in this string will dictate the frequency of the file rotation. For example, if your datePattern is simply 'HH' you will end up with 24 log files that are picked up and appended to every day.
+   * A string representing the moment.js date format to be used for rotating.
+   * The meta characters used in this string will dictate the frequency of the file rotation.
+   * For example, if your datePattern is simply 'HH' you will end up with 24 log files that are picked up and appended to every day.
    * default: 'YYYY-MM-DD'
    * for file, error and json logger
    */
@@ -227,6 +237,11 @@ export interface LoggerOptions {
    * date pattern for json logger
    */
   jsonDatePattern?: string;
+
+  /**
+   * A directory of the audit file with absolute path.
+   */
+  auditFileDir?: string;
 
   /**
    * @deprecated use format instead
@@ -326,6 +341,12 @@ export interface GeneralDailyRotateFileTransportOptions extends TransportStream.
    * A string representing the name of the name of the audit file. (default: './hash-audit.json')
    */
   auditFile?: string;
+
+  /**
+   * A directory of the audit file with absolute path.
+   * 'auditFileDir' will be ignore when auditFile set.
+   */
+  auditFileDir?: string;
 
   /**
    * A string representing the frequency of rotation. (default: 'custom')
