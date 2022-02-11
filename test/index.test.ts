@@ -22,7 +22,7 @@ import {
   getCurrentDateString,
 } from './util';
 import { EggLogger } from 'egg-logger';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync } from 'fs';
 import * as os from 'os';
 
 describe('/test/index.test.ts', () => {
@@ -1149,12 +1149,8 @@ describe('/test/index.test.ts', () => {
     logger.error('file logger2');
     await sleep();
 
-    expect(
-      fileExists(join(logsDir, 'tmp/.9372e475674efb28352443dbc54a8f66d40346c4-audit.json'))
-    ).toBeTruthy();
-    expect(
-      fileExists(join(logsDir, 'tmp/.bce532fa5117c29c0f44635c64f7124e4305a615-audit.json'))
-    ).toBeTruthy();
+    const dir = readdirSync(join(logsDir, 'tmp'));
+    expect(dir.length).toEqual(2);
 
     await removeFileOrDir(logsDir);
   });
