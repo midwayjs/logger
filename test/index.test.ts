@@ -1131,4 +1131,31 @@ describe('/test/index.test.ts', () => {
     logger.info('abc', err2);
     expect(fn.mock.calls[2][0].originError).toEqual(err2);
   });
+
+  it('should test change audit file logs', async () => {
+    clearAllLoggers();
+    const logsDir = join(__dirname, 'logs');
+    await removeFileOrDir(logsDir);
+
+    const logger = createFileLogger('file', {
+      dir: logsDir,
+      fileLogName: 'test-logger.log',
+      auditFileDir: join(logsDir, 'tmp'),
+      enableJSON: true,
+    });
+
+    logger.info('file logger');
+    logger.info('file logger1');
+    logger.error('file logger2');
+    await sleep();
+
+    expect(
+      fileExists(join(logsDir, 'tmp/.9372e475674efb28352443dbc54a8f66d40346c4-audit.json'))
+    ).toBeTruthy();
+    expect(
+      fileExists(join(logsDir, 'tmp/.bce532fa5117c29c0f44635c64f7124e4305a615-audit.json'))
+    ).toBeTruthy();
+
+    await removeFileOrDir(logsDir);
+  });
 });
