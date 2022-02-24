@@ -20,7 +20,8 @@ function sendLogItem(transport, level, message, meta?, cb?) {
   });
 
   const info = { level: level, message: message };
-  transport.log(winston.format.json().transform(info));
+  const jsonFormat = winston.format.json();
+  transport.log(jsonFormat.transform(info, jsonFormat.options));
 }
 
 describe('winston/transports/daily-rotate-file', function () {
