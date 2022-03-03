@@ -1154,4 +1154,28 @@ describe('/test/index.test.ts', () => {
 
     await removeFileOrDir(logsDir);
   });
+
+  it('should test transport with collect info', async () => {
+    clearAllLoggers();
+    let err;
+
+    class CustomTransport extends EmptyTransport {
+      log(info, callback) {
+        err = info.originError;
+        callback();
+      }
+    }
+
+    const logger = createConsoleLogger('test', {
+      level: 'debug',
+    }) as IMidwayLogger;
+
+    logger.add(new CustomTransport());
+
+    logger.error(new Error('abcdef'));
+
+    await sleep();
+
+    expect(err).toBeDefined();
+  });
 });
