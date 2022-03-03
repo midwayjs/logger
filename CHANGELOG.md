@@ -1,4 +1,18 @@
 
+2.16.1 / 2022-03-03
+===================
+
+  * fix: transport info property missing (#37)
+  * chore(deps): update dependency typescript to v4.6.2 (#34)
+  * chore(deps): update actions/setup-node action to v3 (#33)
+  * chore(deps): update dependency ts-node to v10.6.0 (#35)
+  * chore(deps): update actions/checkout action to v3 (#36)
+  * chore(deps): update dependency @types/jest to v27.4.1 (#31)
+  * chore(deps): update dependency fs-extra to v10.0.1 (#30)
+  * fix(deps): update dependency object-hash to v3 (#29)
+  * chore(deps): update dependency @types/node to v16.11.26 (#28)
+  * fix: case (#32)
+
 2.16.0 / 2022-02-11
 ===================
 
