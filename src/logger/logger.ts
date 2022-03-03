@@ -363,29 +363,27 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
       format.timestamp({
         format: 'YYYY-MM-DD HH:mm:ss,SSS',
       }),
-      format.splat()
+      format.splat(),
+      displayCommonMessage({
+        target: this,
+      }),
+      displayLabels()
     );
   }
 
   private getDefaultPrint() {
-    return format.combine(
-      displayCommonMessage({
-        target: this,
-      }),
-      displayLabels(),
-      format.printf(info => {
-        if (info.ignoreFormat) {
-          return info.message;
-        }
-        const newInfo = this.customInfoHandler(info as MidwayTransformableInfo);
-        const printInfo =
-          newInfo.format ||
-          this.loggerOptions.format ||
-          this.loggerOptions.printFormat ||
-          this.defaultPrintFormat;
-        return printInfo(newInfo || (info as MidwayTransformableInfo));
-      })
-    );
+    return format.printf(info => {
+      if (info.ignoreFormat) {
+        return info.message;
+      }
+      const newInfo = this.customInfoHandler(info as MidwayTransformableInfo);
+      const printInfo =
+        newInfo.format ||
+        this.loggerOptions.format ||
+        this.loggerOptions.printFormat ||
+        this.defaultPrintFormat;
+      return printInfo(newInfo || (info as MidwayTransformableInfo));
+    });
   }
 
   getDefaultLabel(): string {

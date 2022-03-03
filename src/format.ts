@@ -83,15 +83,16 @@ export const displayLabels = format((info, opts) => {
 });
 
 export const customJSON = format((info, opts) => {
-  info.pid = process.pid;
   const meta = {} as any;
   if (info[ORIGIN_ERROR as any]) {
     meta.originError = info[ORIGIN_ERROR as any];
   }
+  removeProperty(info, 'originError');
 
   if (info[ORIGIN_ARGS as any]) {
     meta.originArgs = info[ORIGIN_ARGS as any];
   }
+  removeProperty(info, 'originArgs');
 
   meta.ignoreFormat = info.ignoreFormat ?? false;
   removeProperty(info, 'ignoreFormat');
@@ -104,9 +105,14 @@ export const customJSON = format((info, opts) => {
 
   meta.LEVEL = info.LEVEL ?? info.level.toUpperCase();
   removeProperty(info, 'LEVEL');
+  meta.level = info.level;
   info.level = meta.LEVEL;
 
+  meta.pid = info.pid;
+  removeProperty(info, 'pid');
+
   removeProperty(info, 'label');
+  removeProperty(info, 'labelText');
   removeProperty(info, 'defaultLabel');
   const jsonFormat = info.jsonFormat || opts.jsonFormat;
   removeProperty(info, 'jsonFormat');
