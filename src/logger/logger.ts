@@ -238,12 +238,12 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   enableError(): void {
     if (!this.errTransport) {
       this.errTransport = new DailyRotateFileTransport({
-        dirname:
-          this.loggerOptions.errorDir ||
-          this.loggerOptions.datePattern ||
-          this.loggerOptions.dir,
+        dirname: this.loggerOptions.errorDir || this.loggerOptions.dir,
         filename: this.loggerOptions.errorLogName,
-        datePattern: this.loggerOptions.errDatePattern || 'YYYY-MM-DD',
+        datePattern:
+          this.loggerOptions.errDatePattern ||
+          this.loggerOptions.datePattern ||
+          'YYYY-MM-DD',
         level: 'error',
         createSymlink: assertConditionTruthy(
           this.loggerOptions.disableErrorSymlink,
