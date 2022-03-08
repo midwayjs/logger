@@ -1,4 +1,10 @@
 
+2.16.3 / 2022-03-08
+===================
+
+  * fix: support relative audit dir (#40)
+  * chore(deps): update dependency ts-node to v10.7.0 (#39)
+
 2.16.2 / 2022-03-04
 ===================
 
