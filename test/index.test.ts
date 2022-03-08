@@ -1155,6 +1155,29 @@ describe('/test/index.test.ts', () => {
     await removeFileOrDir(logsDir);
   });
 
+  it('should support relative audit dir', async () => {
+    clearAllLoggers();
+    const logsDir = join(__dirname, 'logs');
+    await removeFileOrDir(logsDir);
+
+    const logger = createFileLogger('file', {
+      dir: logsDir,
+      fileLogName: 'test-logger.log',
+      auditFileDir: 'tmp',
+      enableJSON: true,
+    });
+
+    logger.info('file logger');
+    logger.info('file logger1');
+    logger.error('file logger2');
+    await sleep();
+
+    const dir = readdirSync(join(logsDir, 'tmp'));
+    expect(dir.length).toEqual(2);
+
+    await removeFileOrDir(logsDir);
+  });
+
   it('should test transport with collect info', async () => {
     clearAllLoggers();
     let err;

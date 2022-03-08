@@ -12,7 +12,7 @@ import {
 import { EmptyTransport } from '../transport';
 import { displayLabels, displayCommonMessage, customJSON } from '../format';
 import * as os from 'os';
-import { basename, dirname, isAbsolute } from 'path';
+import { basename, dirname, isAbsolute, join } from 'path';
 import * as util from 'util';
 import { ORIGIN_ARGS, ORIGIN_ERROR } from '../constant';
 import { WinstonLogger } from '../winston/logger';
@@ -97,6 +97,9 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
     }
 
     options.dir = options.dir || process.cwd();
+    if (options.auditFileDir && !isAbsolute(options.auditFileDir)) {
+      options.auditFileDir = join(options.dir, options.auditFileDir);
+    }
 
     // add file log transport
     if (options.enableFile !== false && options.disableFile !== true) {
