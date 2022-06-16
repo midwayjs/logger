@@ -19,6 +19,7 @@ export function debounce(func: () => void, wait: number, immediate?) {
   }
 
   const debounced: any = (...args) => {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     context = this;
     timestamp = Date.now();
     const callNow = immediate && !timeout;
