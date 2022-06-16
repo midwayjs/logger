@@ -23,7 +23,7 @@
     "threads": "1.7.0",
     "ts-jest": "28.0.5",
     "ts-node": "10.7.0",
-    "typescript": "4.6.4"
+    "typescript": "4.7.3"
   },
   "engines": {
     "node": ">=10"
