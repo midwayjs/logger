@@ -39,7 +39,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "test": "./node_modules/.bin/jest --runInBand",
-    "cov": "./node_modules/.bin/jest --coverage --forceExit",
+    "cov": "./node_modules/.bin/jest --runInBand --coverage --forceExit",
     "lint": "mwts check",
     "lint:fix": "mwts fix"
   },
