@@ -38,8 +38,8 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc",
-    "test": "cross-env node --require=ts-node/register ./node_modules/.bin/jest",
-    "cov": "cross-env node --require=ts-node/register ./node_modules/.bin/jest --coverage --forceExit",
+    "test": "./node_modules/.bin/jest --runInBand",
+    "cov": "./node_modules/.bin/jest --coverage --forceExit",
     "lint": "mwts check",
     "lint:fix": "mwts fix"
   },
