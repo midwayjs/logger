@@ -166,8 +166,11 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   enableConsole(): void {
     if (!this.consoleTransport) {
       let format;
-      if (process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true' || this.loggerOptions.disableConsoleColors) {
-        format = this.getDefaultPrint()
+      if (
+        process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true' ||
+        this.loggerOptions.disableConsoleColors
+      ) {
+        format = this.getDefaultPrint();
       } else {
         format = winstonFormat.combine(
           this.getDefaultPrint(),
@@ -185,7 +188,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
               all: 'reset',
             },
           })
-        )
+        );
       }
 
       this.consoleTransport = new transports.Console({
