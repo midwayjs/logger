@@ -1,4 +1,4 @@
-import { transports, format } from 'winston';
+import { transports, format as winstonFormat } from 'winston';
 import { DailyRotateFileTransport } from '../transport/rotate';
 import {
   LoggerLevel,
@@ -165,30 +165,34 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
 
   enableConsole(): void {
     if (!this.consoleTransport) {
+      let format;
+      if (process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true' || this.loggerOptions.disableConsoleColors) {
+        format = this.getDefaultPrint()
+      } else {
+        format = winstonFormat.combine(
+          this.getDefaultPrint(),
+          winstonFormat.colorize({
+            all: true,
+            colors: {
+              none: 'reset',
+              error: 'red',
+              trace: 'reset',
+              warn: 'yellow',
+              info: 'reset',
+              verbose: 'reset',
+              debug: 'blue',
+              silly: 'reset',
+              all: 'reset',
+            },
+          })
+        )
+      }
+
       this.consoleTransport = new transports.Console({
         level: formatLevel(
           this.loggerOptions.consoleLevel || this.loggerOptions.level || 'silly'
         ),
-        format:
-          process.env.MIDWAY_LOGGER_DISABLE_COLORS !== 'true'
-            ? format.combine(
-                this.getDefaultPrint(),
-                format.colorize({
-                  all: true,
-                  colors: {
-                    none: 'reset',
-                    error: 'red',
-                    trace: 'reset',
-                    warn: 'yellow',
-                    info: 'reset',
-                    verbose: 'reset',
-                    debug: 'blue',
-                    silly: 'reset',
-                    all: 'reset',
-                  },
-                })
-              )
-            : this.getDefaultPrint(),
+        format,
       });
     }
     this.add(this.consoleTransport);
@@ -273,11 +277,11 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   enableJSON(): void {
     if (!this.jsonTransport) {
       this.jsonTransport = new DailyRotateFileTransport({
-        format: format.combine(
+        format: winstonFormat.combine(
           customJSON({
             jsonFormat: this.loggerOptions.jsonFormat,
           }),
-          format.json()
+          winstonFormat.json()
         ),
         dirname: this.loggerOptions.jsonDir || this.loggerOptions.dir,
         filename: this.loggerOptions.jsonLogName,
@@ -362,11 +366,11 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   }
 
   protected getDefaultFormat() {
-    return format.combine(
-      format.timestamp({
+    return winstonFormat.combine(
+      winstonFormat.timestamp({
         format: 'YYYY-MM-DD HH:mm:ss,SSS',
       }),
-      format.splat(),
+      winstonFormat.splat(),
       displayCommonMessage({
         target: this,
       }),
@@ -375,7 +379,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   }
 
   private getDefaultPrint() {
-    return format.printf(info => {
+    return winstonFormat.printf(info => {
       if (info.ignoreFormat) {
         return info.message;
       }
@@ -424,6 +428,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   debug(...args) {
     this.log('debug', ...args);
   }
+
   info(...args) {
     this.log('info', ...args);
   }
