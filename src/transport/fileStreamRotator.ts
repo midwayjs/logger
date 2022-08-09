@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as EventEmitter from 'events';
-import { format, debuglog } from 'util';
+import { debuglog, format } from 'util';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import * as assert from 'assert';
@@ -577,18 +577,24 @@ export class FileStreamRotator {
 
       // 这里采用 1s 的防抖，避免过于频繁的获取文件大小
       const resetCurLogSize = debounce(() => {
-        const lastLogFileStats = fs.statSync(logfile);
-        if (lastLogFileStats.size > curSize) {
-          curSize = lastLogFileStats.size;
+        try {
+          const lastLogFileStats = fs.statSync(logfile);
+          if (lastLogFileStats.size > curSize) {
+            curSize = lastLogFileStats.size;
+          }
+          return false;
+        } catch (err) {
+          return true;
         }
       }, 1000);
 
       stream.write = (str, encoding) => {
-        resetCurLogSize();
+        const isCurLogRemoved = resetCurLogSize();
         const newDate = frequencyMetaData
           ? this.getDate(frequencyMetaData, dateFormat, options.utc)
           : curDate;
         if (
+          isCurLogRemoved ||
           (curDate && newDate !== curDate) ||
           (fileSize && curSize > fileSize)
         ) {
