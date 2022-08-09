@@ -1,16 +1,16 @@
-import { transports, format } from 'winston';
+import { format, transports } from 'winston';
 import { DailyRotateFileTransport } from '../transport/rotate';
 import {
-  LoggerLevel,
-  LoggerOptions,
-  IMidwayLogger,
-  MidwayTransformableInfo,
-  LoggerCustomInfoHandler,
   ChildLoggerOptions,
   ContextLoggerOptions,
+  IMidwayLogger,
+  LoggerCustomInfoHandler,
+  LoggerLevel,
+  LoggerOptions,
+  MidwayTransformableInfo,
 } from '../interface';
 import { EmptyTransport } from '../transport';
-import { displayLabels, displayCommonMessage, customJSON } from '../format';
+import { customJSON, displayCommonMessage, displayLabels } from '../format';
 import * as os from 'os';
 import { basename, dirname, isAbsolute, join } from 'path';
 import * as util from 'util';
@@ -47,6 +47,16 @@ const midwayLogLevels = {
   silly: 7,
   all: 8,
 };
+
+function getMaxSize(...args) {
+  for (let i = 0; i <= args.length; i++) {
+    if (args[i] === undefined) {
+      continue;
+    }
+    return args[i];
+  }
+  return null;
+}
 
 /**
  *  base logger with console transport and file transport
@@ -215,10 +225,11 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
           this.loggerOptions.disableSymlink
         ),
         symlinkName: this.loggerOptions.fileLogName,
-        maxSize:
-          this.loggerOptions.fileMaxSize ||
-          this.loggerOptions.maxSize ||
-          '200m',
+        maxSize: getMaxSize(
+          this.loggerOptions.fileMaxSize,
+          this.loggerOptions.maxSize,
+          '200m'
+        ),
         maxFiles:
           this.loggerOptions.fileMaxFiles ||
           this.loggerOptions.maxFiles ||
@@ -253,8 +264,11 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
           this.loggerOptions.disableSymlink
         ),
         symlinkName: this.loggerOptions.errorLogName,
-        maxSize:
-          this.loggerOptions.errMaxSize || this.loggerOptions.maxSize || '200m',
+        maxSize: getMaxSize(
+          this.loggerOptions.errMaxSize,
+          this.loggerOptions.maxSize,
+          '200m'
+        ),
         maxFiles:
           this.loggerOptions.errMaxFiles ||
           this.loggerOptions.maxFiles ||
@@ -293,10 +307,11 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
           this.loggerOptions.disableSymlink
         ),
         symlinkName: this.loggerOptions.jsonLogName,
-        maxSize:
-          this.loggerOptions.jsonMaxSize ||
-          this.loggerOptions.maxSize ||
-          '200m',
+        maxSize: getMaxSize(
+          this.loggerOptions.jsonMaxSize,
+          this.loggerOptions.maxSize,
+          '200m'
+        ),
         maxFiles:
           this.loggerOptions.jsonMaxFiles ||
           this.loggerOptions.maxFiles ||
