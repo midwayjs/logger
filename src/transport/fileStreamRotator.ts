@@ -577,15 +577,16 @@ export class FileStreamRotator {
 
       // 这里采用 1s 的防抖，避免过于频繁的获取文件大小
       const resetCurLogSize = debounce(() => {
+        let isCurLogRemoved = false;
         try {
           const lastLogFileStats = fs.statSync(logfile);
           if (lastLogFileStats.size > curSize) {
             curSize = lastLogFileStats.size;
           }
-          return false;
         } catch (err) {
-          return true;
+          isCurLogRemoved = true;
         }
+        return isCurLogRemoved;
       }, 1000);
 
       stream.write = (str, encoding) => {
