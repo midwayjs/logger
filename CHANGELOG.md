@@ -1,4 +1,34 @@
 
+2.17.0 / 2022-08-10
+===================
+
+  * fix: support maxSize set null and deal with ENOENT error issue when rotated in pm2 cluster mode (#68)
+  * chore: remove v10 test
+  * fix: test case
+  * fix: test case
+  * chore(deps): update dependency ts-jest to v28.0.7 (#61)
+  * chore(deps): update jest monorepo (#57)
+  * chore(deps): update dependency typescript to v4.7.4 (#58)
+  * chore(deps): update dependency ts-node to v10.9.1 (#60)
+  * chore(deps): update dependency @types/node to v16.11.45 (#59)
+  * fix: lint
+  * chore(deps): update dependency jest to v28.1.1 (#51)
+  * chore(deps): update dependency ts-node to v10.8.1 (#53)
+  * chore(deps): update dependency @types/jest to v28 (#56)
+  * chore(deps): update dependency typescript to v4.7.3 (#55)
+  * chore(deps): update dependency ts-jest to v28.0.5 (#54)
+  * chore(deps): update dependency @types/node to v16.11.41 (#50)
+  * chore(deps): update dependency typescript to v4.6.4 (#49)
+  * chore(deps): update dependency ts-jest to v28 (#52)
+  * chore(deps): update dependency jest to v28.0.3 (#48)
+  * chore(deps): update dependency fs-extra to v10.1.0 (#46)
+  * chore(deps): update codecov/codecov-action action to v3 (#44)
+  * chore(deps): update dependency jest to v28 (#47)
+  * chore(deps): update dependency @types/node to v16.11.31 (#45)
+  * chore(deps): update dependency typescript to v4.6.3 (#43)
+  * chore(deps): update dependency egg-logger to v2.8.0 (#41)
+  * chore(deps): update dependency ts-jest to v27.1.4 (#42)
+
 2.16.3 / 2022-03-08
 ===================
 
