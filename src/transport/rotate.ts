@@ -65,7 +65,7 @@ function throwIf(options, ...args) {
 }
 
 export class DailyRotateFileTransport extends Transport {
-  options;
+  options: GeneralDailyRotateFileTransportOptions;
   logStream;
   name = 'dailyRotateFile';
   dirname: string;
