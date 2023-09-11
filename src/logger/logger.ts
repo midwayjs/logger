@@ -240,6 +240,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
           this.loggerOptions.zippedArchive,
         format: this.getDefaultPrint(),
         auditFileDir: this.loggerOptions.auditFileDir,
+        options: this.loggerOptions.fileOptions,
       });
     }
     this.add(this.fileTransport);
@@ -279,6 +280,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
           this.loggerOptions.zippedArchive,
         format: this.getDefaultPrint(),
         auditFileDir: this.loggerOptions.auditFileDir,
+        options: this.loggerOptions.fileOptions,
       });
     }
     this.add(this.errTransport);
@@ -321,6 +323,7 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
           this.loggerOptions.jsonZippedArchive ||
           this.loggerOptions.zippedArchive,
         auditFileDir: this.loggerOptions.auditFileDir,
+        options: this.loggerOptions.fileOptions,
       });
     }
     this.add(this.jsonTransport);

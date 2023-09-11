@@ -1,4 +1,9 @@
 import TransportStream = require('winston-transport');
+import { createWriteStream } from 'fs';
+
+type ExtractConnectionOptionsFromConnection<T extends (...args: any[]) => any> = Parameters<T>[1];
+
+type WriteStreamOptions = ExtractConnectionOptionsFromConnection<typeof createWriteStream>;
 
 export interface ILogger {
   info(msg: any, ...args: any[]): void;
@@ -267,6 +272,10 @@ export interface LoggerOptions {
    * @deprecated use enableError instead
    */
   disableError?: boolean;
+  /**
+   * writeable stream options for file logger
+   */
+  fileOptions?: WriteStreamOptions;
 }
 
 export type ChildLoggerOptions = Pick<LoggerOptions, 'format'| 'jsonFormat'>;
