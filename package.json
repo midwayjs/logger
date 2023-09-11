@@ -1,6 +1,6 @@
 {
   "name": "@midwayjs/logger",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "description": "midway logger sdk",
   "main": "dist/index",
   "typings": "dist/index.d.ts",
