@@ -13,7 +13,6 @@ import { EmptyTransport } from '../transport';
 import { customJSON, displayCommonMessage, displayLabels } from '../format';
 import * as os from 'os';
 import { basename, dirname, isAbsolute, join } from 'path';
-import * as util from 'util';
 import { ORIGIN_ARGS, ORIGIN_ERROR } from '../constant';
 import { WinstonLogger } from '../winston/logger';
 import {
@@ -150,23 +149,19 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
 
   protected log(level, ...args) {
     const originArgs = [...args];
-    let meta, msg;
+    let meta;
     if (args.length > 1 && isPlainObject(args[args.length - 1])) {
       meta = args.pop();
     } else {
       meta = {};
     }
 
-    const last = args.pop();
-    if (last instanceof Error) {
-      msg = util.format(...args, last);
-      meta[ORIGIN_ERROR] = last;
-    } else {
-      msg = util.format(...args, last);
+    if (args.length > 0 && args[args.length - 1] instanceof Error) {
+      meta[ORIGIN_ERROR] = args.pop();
     }
 
     meta[ORIGIN_ARGS] = originArgs;
-    return super.log(level, msg, meta);
+    return super.log(level, ...args, meta);
   }
 
   disableConsole(): void {
