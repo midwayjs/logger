@@ -162,6 +162,10 @@ export interface LoggerOptions {
    */
   disableJSONSymlink?: boolean;
   /**
+   * disable ansi escape sequences for console transport
+   */
+  disableConsoleColors?: boolean;
+  /**
    * Maximum file size for file, error and json logger
    * Maximum size of the file after which it will rotate.
    * This can be a number of bytes, or units of kb, mb, and gb.
