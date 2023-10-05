@@ -27,6 +27,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'fs';
 describe('/test/index.test.ts', () => {
   afterEach(() => {
     jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   it('should output with console transport', () => {
