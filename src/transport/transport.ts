@@ -36,8 +36,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
 
   constructor(
     protected readonly options: TransportOptions = {} as TransportOptions
-  ) {
-  }
+  ) {}
 
   setLoggerOptions(options: LoggerOptions) {
     this.loggerOptions = options;
@@ -137,9 +136,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
 }
 
 export class EmptyTransport extends Transport<any> {
-  log(level: LoggerLevel | false, ...args: any[]) {
-  }
+  log(level: LoggerLevel | false, ...args: any[]) {}
 
-  close() {
-  }
+  close() {}
 }
