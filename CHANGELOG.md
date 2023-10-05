@@ -1,4 +1,13 @@
 
+3.0.0-beta.1 / 2023-10-05
+=========================
+
+  * test: add buffer write case
+  * test: add reset
+  * chore: lint
+  * feat: code for v3
+  * chore: tmp code
+
 2.17.0 / 2022-08-10
 ===================
 
