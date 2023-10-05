@@ -8,6 +8,31 @@
   * feat: code for v3
   * chore: tmp code
 
+
+2.18.0 / 2023-09-11
+===================
+
+* feat: add file options (#92)
+* chore(deps): update dependency @types/node to v18.17.15 (#88)
+* chore(deps): update actions/checkout action to v4 (#91)
+* chore(deps): update dependency @types/node to v18.14.2 (#87)
+* chore(deps): update dependency @types/node to v18.14.0 (#86)
+* chore(deps): update dependency @types/node to v18.13.0 (#83)
+* chore(deps): update dependency typescript to v4.9.5 (#84)
+* chore(deps): update dependency @types/node to v18 (#79)
+* chore(deps): update dependency egg-logger to v2.9.1 (#64)
+* chore(deps): update dependency typescript to v4.9.4 (#80)
+* chore(deps): update dependency @types/node to v16.18.8 (#78)
+* chore(deps): update dependency @types/jest to v28.1.8 (#73)
+* chore(deps): update dependency typescript to v4.8.4 (#77)
+* chore(deps): update dependency @types/node to v16.11.65 (#76)
+* chore(deps): update dependency typescript to v4.8.3 (#75)
+* chore(deps): update dependency @types/node to v16.11.59 (#72)
+* chore(deps): update dependency @types/node to v16.11.51 (#71)
+* chore(deps): update dependency @types/jest to v28.1.7 (#70)
+* chore(deps): update dependency ts-jest to v28.0.8 (#69)
+* chore(deps): update dependency @types/node to v16.11.49 (#65)
+
 2.17.0 / 2022-08-10
 ===================
 
