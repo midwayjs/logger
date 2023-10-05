@@ -32,6 +32,9 @@ export class FileTransport
   ) {
     super(options);
     if (this.options.bufferWrite) {
+      this.options.bufferMaxLength = this.options.bufferMaxLength || 1000;
+      this.options.bufferFlushInterval =
+        this.options.bufferFlushInterval || 1000;
       this.timer = this.createInterval();
     }
 
@@ -167,12 +170,7 @@ export class FileTransport
   }
 
   get writable() {
-    return (
-      this.logStream &&
-      !this.logStream.closed &&
-      this.logStream.writable &&
-      !this.logStream.destroyed
-    );
+    return this.logStream && this.logStream.canWrite();
   }
 }
 

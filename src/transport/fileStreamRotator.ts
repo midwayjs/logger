@@ -534,6 +534,13 @@ export class FileStreamRotator {
         rotateStream.end(...args);
         resetCurLogSize.clear();
       };
+      stream.canWrite = () => {
+        return (
+          !rotateStream.closed &&
+          rotateStream.writable &&
+          !rotateStream.destroyed
+        );
+      };
       BubbleEvents(rotateStream, stream);
 
       stream.on('new', newLog => {
