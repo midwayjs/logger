@@ -1,81 +1,79 @@
 import {
-  MidwayDelegateLogger,
-  MidwayBaseLogger,
-  clearAllLoggers,
+  Logger,
+  ConsoleTransport,
+  FileTransport,
   createConsoleLogger,
-  createFileLogger,
+  clearAllLoggers,
   createLogger,
-  IMidwayLogger,
   loggers,
-  EmptyTransport,
   ILogger,
+  IMidwayLogger,
+  EmptyTransport,
+  createFileLogger, JSONTransport,
 } from '../src';
 import { join } from 'path';
 import {
-  fileExists,
-  includeContent,
-  removeFileOrDir,
-  sleep,
   createChildProcess,
+  fileExists,
   finishLogger,
-  matchContentTimes,
   getCurrentDateString,
+  includeContent, matchContentTimes,
+  removeFileOrDir,
+  sleep
 } from './util';
-import { EggLogger } from 'egg-logger';
-import { readFileSync, writeFileSync, readdirSync } from 'fs';
 import * as os from 'os';
+import { readdirSync, readFileSync, writeFileSync } from 'fs';
 
 describe('/test/index.test.ts', () => {
-
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should test logger output format', function () {
-    const logger = createConsoleLogger(
-      'globalOutputConsoleLogger'
-    ) as MidwayBaseLogger;
+  it('should output with console transport', () => {
+    const logger = new Logger();
+    logger.add('console', new ConsoleTransport());
 
-    const fn = jest.spyOn(logger, 'write');
+    const fnStdout = jest.spyOn(process.stdout, 'write');
+    const fnStderr = jest.spyOn(process.stderr, 'write');
 
     logger.verbose('test', 'test1', 'test2', 'test3');
-    expect(fn.mock.calls[0][0].message).toEqual('test test1 test2 test3');
+    expect(fnStdout.mock.calls[0][0]).toContain('test test1 test2 test3');
 
     logger.silly('test', 123, 'test2', 'test3');
-    expect(fn.mock.calls[1][0].message).toEqual('test 123 test2 test3');
+    expect(fnStdout.mock.calls[1][0]).toContain('test 123 test2 test3');
 
-    logger.info('test', 123, [3,2,1], 'test3', new Error('abc'));
-    expect(fn.mock.calls[2][0].message).toContain('test 123 [ 3, 2, 1 ] test3 Error: abc');
+    logger.info('test', 123, [3, 2, 1], 'test3', new Error('abc'));
+    expect(fnStdout.mock.calls[2][0]).toContain('test 123 [ 3, 2, 1 ] test3 Error: abc');
 
     logger.info('test', new Error('bcd'));
-    expect(fn.mock.calls[3][0].message).toContain('test Error: bcd');
+    expect(fnStdout.mock.calls[3][0]).toContain('test Error: bcd');
 
     logger.info('test', new Error('bcd'), new Error('cdd'));
-    expect(fn.mock.calls[4][0].message).toContain('test Error: bcd');
-    expect(fn.mock.calls[4][0].message).toContain('Error: cdd');
+    expect(fnStdout.mock.calls[4][0]).toContain('test Error: bcd');
+    expect(fnStdout.mock.calls[4][0]).toContain('Error: cdd');
 
     logger.info('%s %d', 'aaa', 222);
-    expect(fn.mock.calls[5][0].message).toContain('aaa 222');
+    expect(fnStdout.mock.calls[5][0]).toContain('aaa 222');
 
     // 单个数据
     // string
     logger.error('plain error message');
-    expect(fn.mock.calls[6][0].message).toEqual('plain error message');
+    expect(fnStderr.mock.calls[0][0]).toContain('plain error message');
     // number
     logger.error(123);
-    expect(fn.mock.calls[7][0].message).toEqual('123');
+    expect(fnStderr.mock.calls[1][0]).toContain('123');
     // array
     logger.error(['b', 'c']);
-    expect(fn.mock.calls[8][0].message).toEqual('[ \'b\', \'c\' ]');
+    expect(fnStderr.mock.calls[2][0]).toContain('[ \'b\', \'c\' ]');
     // string + number
     logger.error('plain error message', 321);
-    expect(fn.mock.calls[9][0].message).toEqual('plain error message 321');
+    expect(fnStderr.mock.calls[3][0]).toContain('plain error message 321');
     // format
-    logger.error('format log, %j', { a: 1 });
-    expect(fn.mock.calls[10][0].message).toEqual('format log, {"a":1}');
+    logger.error('format log, %j', {a: 1});
+    expect(fnStderr.mock.calls[4][0]).toContain('format log, {"a":1}');
     // set
     logger.info(new Set([2, 3, 4]));
-    expect(fn.mock.calls[11][0].message).toContain('{ 2, 3, 4 }');
+    expect(fnStdout.mock.calls[6][0]).toContain('{ 2, 3, 4 }');
     // map
     logger.info(
       new Map([
@@ -83,32 +81,44 @@ describe('/test/index.test.ts', () => {
         ['key2', 'value2'],
       ])
     );
-    expect(fn.mock.calls[12][0].message).toContain('{ \'key1\' => \'value1\', \'key2\' => \'value2\' }');
+    expect(fnStdout.mock.calls[7][0]).toContain('{ \'key1\' => \'value1\', \'key2\' => \'value2\' }');
     // warn object
-    logger.warn({ name: 'Jack' });
-    expect(fn.mock.calls[13][0].message).toEqual('{ name: \'Jack\' }');
+    logger.warn({name: 'Jack'});
+    expect(fnStdout.mock.calls[8][0]).toContain('{ name: \'Jack\' }');
     // error object
     logger.error(new Error('error instance'));
-    expect(fn.mock.calls[14][0].message).toContain('Error: error instance');
+    expect(fnStderr.mock.calls[5][0]).toContain('Error: error instance');
     // named error
     const error = new Error('named error instance');
     error.name = 'NamedError';
     // 直接输出 error
     logger.error(error);
-    expect(fn.mock.calls[15][0].message).toContain('NamedError');
-    expect(fn.mock.calls[15][0].message).toContain('named error instance');
+    expect(fnStderr.mock.calls[6][0]).toContain('NamedError');
+    expect(fnStderr.mock.calls[6][0]).toContain('named error instance');
+
+    logger.close();
   });
 
-  it('should test create logger', async () => {
+  it('should test create logger with file transport', async () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
-    const coreLogger = new MidwayBaseLogger({
-      dir: logsDir,
-      fileLogName: 'midway-core.log'
+    const coreLogger = new Logger({
+      transports: {
+        console: new ConsoleTransport(),
+        file: new FileTransport({
+          dir: logsDir,
+          fileLogName: 'midway-core.log'
+        }),
+        error: new FileTransport({
+          level: 'error',
+          dir: logsDir,
+          fileLogName: 'common-error.log',
+        }),
+      }
     });
 
-    expect(coreLogger.getConsoleLevel()).toEqual('silly');
-    expect(coreLogger.getFileLevel()).toEqual('silly');
+    expect(coreLogger.get('console').level).toEqual('silly');
+    expect(coreLogger.get('file').level).toEqual('silly');
 
     coreLogger.info('hello world1');
     coreLogger.info('hello world2');
@@ -117,15 +127,15 @@ describe('/test/index.test.ts', () => {
     coreLogger.error('hello world5');
     // 调整完之后控制台应该看不见了，但是文件还写入
 
-    coreLogger.updateConsoleLevel('warn');
-    expect(coreLogger.getConsoleLevel()).toEqual('warn');
+    coreLogger.get('console').level = 'warn';
+    expect(coreLogger.get('console').level).toEqual('warn');
     coreLogger.info('hello world6');
     coreLogger.info('hello world7');
     coreLogger.info('hello world8');
 
     // 文件也不会写入了
-    coreLogger.updateFileLevel('warn');
-    expect(coreLogger.getFileLevel()).toEqual('warn');
+    coreLogger.get('file').level = 'warn';
+    expect(coreLogger.get('file').level).toEqual('warn');
     coreLogger.info('hello world9');
     coreLogger.info('hello world10');
     coreLogger.info('hello world11');
@@ -227,67 +237,17 @@ describe('/test/index.test.ts', () => {
     await removeFileOrDir(logsDir);
   });
 
-  it('should test delegate logger to other', async () => {
-    const logsDir = join(__dirname, 'logs');
-    await removeFileOrDir(logsDir);
-    const eggLogger = new EggLogger({
-      file: join(logsDir, 'egg-logger.log'),
-      level: 'WARN',
-    });
-    const coreLogger = new MidwayDelegateLogger({
-      delegateLogger: eggLogger,
-    });
-
-    eggLogger.info('hello egg1 from egg logger');
-    eggLogger.warn('hello egg2 from egg logger');
-    eggLogger.error('hello egg3 from egg logger');
-    coreLogger.info('hello egg1 from winston');
-    coreLogger.warn('hello egg2 from winston');
-    coreLogger.error('hello egg3 from winston');
-    eggLogger.close();
-
-    // 日志输出大于 egg-logger 落盘时间
-    await sleep(1000);
-
-    expect(
-      includeContent(
-        join(logsDir, 'egg-logger.log'),
-        'hello egg1 from egg logger'
-      )
-    ).toBeFalsy();
-    expect(
-      includeContent(
-        join(logsDir, 'egg-logger.log'),
-        'hello egg2 from egg logger'
-      )
-    ).toBeTruthy();
-    expect(
-      includeContent(
-        join(logsDir, 'egg-logger.log'),
-        'hello egg3 from egg logger'
-      )
-    ).toBeTruthy();
-    expect(
-      includeContent(join(logsDir, 'egg-logger.log'), 'hello egg1 from winston')
-    ).toBeFalsy();
-    expect(
-      includeContent(join(logsDir, 'egg-logger.log'), 'hello egg2 from winston')
-    ).toBeTruthy();
-    expect(
-      includeContent(join(logsDir, 'egg-logger.log'), 'hello egg3 from winston')
-    ).toBeTruthy();
-
-    coreLogger.close();
-    await removeFileOrDir(logsDir);
-  });
-
   it('should create custom logger and output content', async () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
-    const logger = new MidwayBaseLogger({
-      dir: logsDir,
-      fileLogName: 'custom-logger.log',
-      disableError: true,
+    const logger = new Logger({
+      transports: {
+        console: new ConsoleTransport(),
+        file: new FileTransport({
+          dir: logsDir,
+          fileLogName: 'custom-logger.log',
+        }),
+      }
     });
 
     logger.debug('test', 'test1', 'test2', 'test3');
@@ -295,8 +255,8 @@ describe('/test/index.test.ts', () => {
     logger.error('test2', 'test6', 123, 'test7', new Error('ef'), {
       label: '123',
     });
-    logger.info('hello world', { label: ['a', 'b'] });
-    logger.warn('warn: hello world', { label: 'UserService' });
+    // logger.info('hello world', { label: ['a', 'b'] });
+    // logger.warn('warn: hello world', { label: 'UserService' });
     logger.info('%s %d', 'aaa', 222);
     // string
     logger.error('plain error message');
@@ -307,7 +267,7 @@ describe('/test/index.test.ts', () => {
     // string + number
     logger.error('plain error message', 321);
     // format
-    logger.error('format log, %j', { a: 1 });
+    logger.error('format log, %j', {a: 1});
     // array
     logger.info(['Jack', 'Joe']);
     // set
@@ -320,7 +280,7 @@ describe('/test/index.test.ts', () => {
       ])
     );
     // warn object
-    logger.warn({ name: 'Jack' });
+    logger.warn({name: 'Jack'});
     // error object
     logger.error(new Error('error instance'));
     // named error
@@ -362,15 +322,15 @@ describe('/test/index.test.ts', () => {
         'test2 test6 123 test7 Error: ef'
       )
     ).toBeTruthy();
-    expect(
-      includeContent(join(logsDir, 'custom-logger.log'), '[a:b] hello world')
-    ).toBeTruthy();
-    expect(
-      includeContent(
-        join(logsDir, 'custom-logger.log'),
-        '[UserService] warn: hello world'
-      )
-    ).toBeTruthy();
+    // expect(
+    //   includeContent(join(logsDir, 'custom-logger.log'), '[a:b] hello world')
+    // ).toBeTruthy();
+    // expect(
+    //   includeContent(
+    //     join(logsDir, 'custom-logger.log'),
+    //     '[UserService] warn: hello world'
+    //   )
+    // ).toBeTruthy();
     expect(
       includeContent(join(logsDir, 'custom-logger.log'), 'aaa 222')
     ).toBeTruthy();
@@ -381,7 +341,7 @@ describe('/test/index.test.ts', () => {
       includeContent(join(logsDir, 'custom-logger.log'), '123')
     ).toBeTruthy();
     expect(
-      includeContent(join(logsDir, 'custom-logger.log'), "[ 'b', 'c' ]")
+      includeContent(join(logsDir, 'custom-logger.log'), '[ \'b\', \'c\' ]')
     ).toBeTruthy();
     expect(
       includeContent(join(logsDir, 'custom-logger.log'), '{ 2, 3, 4 }')
@@ -389,7 +349,7 @@ describe('/test/index.test.ts', () => {
     expect(
       includeContent(
         join(logsDir, 'custom-logger.log'),
-        "{ 'key1' => 'value1', 'key2' => 'value2' }"
+        '{ \'key1\' => \'value1\', \'key2\' => \'value2\' }'
       )
     ).toBeTruthy();
     expect(
@@ -399,7 +359,7 @@ describe('/test/index.test.ts', () => {
       includeContent(join(logsDir, 'custom-logger.log'), 'format log, {"a":1}')
     ).toBeTruthy();
     expect(
-      includeContent(join(logsDir, 'custom-logger.log'), "[ 'Jack', 'Joe' ]")
+      includeContent(join(logsDir, 'custom-logger.log'), '[ \'Jack\', \'Joe\' ]')
     ).toBeTruthy();
     expect(
       includeContent(join(logsDir, 'custom-logger.log'), '{ name: \'Jack\' }')
@@ -435,11 +395,11 @@ describe('/test/index.test.ts', () => {
     const err = new Error('custom error');
     err.name = 'MyCustomError';
     consoleLogger.error(err);
-    consoleLogger.error(err, { label: 123 });
+    consoleLogger.error(err, {label: 123});
     consoleLogger.error('before:', err);
     console.log('---');
     consoleLogger.info('启动耗时 %d ms', 111);
-    consoleLogger.info('%j', { a: 1 });
+    consoleLogger.info('%j', {a: 1});
     consoleLogger.debug('1', '2', '3');
     consoleLogger.info('plain error message', 321);
 
@@ -450,11 +410,10 @@ describe('/test/index.test.ts', () => {
     clearAllLoggers();
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
-    const logger = createLogger<IMidwayLogger>('testLogger', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-      disableFile: true,
-      disableError: true,
+    const logger = createLogger<Logger>('testLogger', {
+      transports: {
+        console: new ConsoleTransport(),
+      }
     });
 
     logger.error(new Error('test error'));
@@ -464,11 +423,14 @@ describe('/test/index.test.ts', () => {
       includeContent(join(logsDir, 'test-logger.log'), 'test error')
     ).toBeFalsy();
 
-    logger.enableFile();
+    logger.add('file', new FileTransport({
+      dir: logsDir,
+      fileLogName: 'test-logger.log',
+    }));
     logger.error(new Error('another test error'));
-    logger.info('this is a info message with empty label', { label: [] });
-    logger.info('this is a info message with empty value label', { label: '' });
-    logger.info('this is a info message with value label', { label: 'ddd' });
+    logger.info('this is a info message with empty label', {label: []});
+    logger.info('this is a info message with empty value label', {label: ''});
+    logger.info('this is a info message with value label', {label: 'ddd'});
     logger.info('this is a info message with array value label', {
       label: ['ccc', 'aaa'],
     });
@@ -492,60 +454,13 @@ describe('/test/index.test.ts', () => {
     expect(
       includeContent(
         join(logsDir, 'test-logger.log'),
-        '[ddd] this is a info message with value label'
+        'this is a info message with value label'
       )
     ).toBeTruthy();
     expect(
       includeContent(
         join(logsDir, 'test-logger.log'),
-        '[ccc:aaa] this is a info message with array value label'
-      )
-    ).toBeTruthy();
-
-    await removeFileOrDir(logsDir);
-  });
-
-  it.skip('should create logger use different options', async () => {
-    clearAllLoggers();
-    const logsDir = join(__dirname, 'logs');
-    await removeFileOrDir(logsDir);
-    const logger = createLogger<IMidwayLogger>('testLogger', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-      disableError: true,
-      defaultMeta: {
-        name: 'my-site',
-        group: 'my-group',
-      },
-      printFormat: info => {
-        return `${info.group}.${info.name} ${info.level} ${info.message}`;
-      },
-    });
-
-    // 用户的 meta 优先级更高
-    logger.error('first message', new Error('my error'), {
-      group: 'bbb',
-    });
-
-    logger.updateDefaultMeta({
-      name: 'my-another-site',
-      group: 'my-another-group',
-    });
-
-    logger.error('second message', new Error('my error'));
-
-    await sleep();
-    expect(fileExists(join(logsDir, 'test-logger.log'))).toBeTruthy();
-    expect(
-      includeContent(
-        join(logsDir, 'test-logger.log'),
-        'bbb.my-site error first message Error: my error'
-      )
-    ).toBeTruthy();
-    expect(
-      includeContent(
-        join(logsDir, 'test-logger.log'),
-        'my-another-group.my-another-site error second message Error: my error'
+        'this is a info message with array value label'
       )
     ).toBeTruthy();
 
@@ -557,12 +472,23 @@ describe('/test/index.test.ts', () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
     const timeFormat = getCurrentDateString();
-    const logger = createLogger<IMidwayLogger>('testLogger', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-      errorLogName: 'test-error.log',
-      disableErrorSymlink: true,
-      disableFileSymlink: true,
+    const logger = createLogger<Logger>('testLogger', {
+      format: (info) => {
+        return `${info.level.toUpperCase()} ${process.pid} ${info.args}`;
+      },
+      transports: {
+        file: new FileTransport({
+          dir: logsDir,
+          fileLogName: 'test-logger.log',
+          createSymlink: false,
+        }),
+        error: new FileTransport({
+          level: 'error',
+          dir: logsDir,
+          fileLogName: 'test-error.log',
+          createSymlink: false,
+        })
+      },
     });
 
     logger.error('test console error');
@@ -591,38 +517,6 @@ describe('/test/index.test.ts', () => {
     await removeFileOrDir(logsDir);
   });
 
-  it('should create logger with label', async () => {
-    clearAllLoggers();
-    const logsDir = join(__dirname, 'logs');
-    await removeFileOrDir(logsDir);
-    const logger = createLogger<IMidwayLogger>('testLogger', {
-      dir: logsDir,
-      defaultLabel: 'main label',
-      fileLogName: 'test-logger.log',
-      errorLogName: 'test-error.log',
-    });
-
-    logger.error('test console error');
-    logger.updateDefaultLabel('sandbox');
-    logger.info('test change label');
-
-    await sleep();
-    expect(fileExists(join(logsDir, 'test-logger.log'))).toBeTruthy();
-    expect(
-      includeContent(
-        join(logsDir, 'test-logger.log'),
-        '[main label] test console error'
-      )
-    ).toBeTruthy();
-    expect(
-      includeContent(
-        join(logsDir, 'test-logger.log'),
-        '[sandbox] test change label'
-      )
-    ).toBeTruthy();
-    await removeFileOrDir(logsDir);
-  });
-
   it('should test container and create same logger', async () => {
     if (loggers.size > 0) {
       clearAllLoggers();
@@ -642,10 +536,7 @@ describe('/test/index.test.ts', () => {
     }
     const originLogger: any = createConsoleLogger('consoleLogger');
     expect(loggers.size).toEqual(1);
-    const logger = new MidwayBaseLogger({
-      disableError: true,
-      disableFile: true,
-    });
+    const logger = new Logger();
     // 重复添加会报错
     expect(() => {
       loggers.addLogger('consoleLogger', logger);
@@ -670,35 +561,27 @@ describe('/test/index.test.ts', () => {
     expect(loggers.size).toEqual(0);
   });
 
-  it('should create container with options and add logger', async () => {
-    clearAllLoggers();
-    loggers.updateContainerOption({
-      level: 'warn',
-      disableFile: true,
-      disableError: true,
-    });
-    const customLogger: any = loggers.createLogger('customLogger', {
-      level: 'info',
-      dir: __dirname,
-      fileLogName: 'custom.log',
-    });
-    customLogger.info('11111');
-    customLogger.warn('222');
-    await sleep();
-    expect(!fileExists(join(__dirname, 'custom.log'))).toBeTruthy();
-  });
-
   it('should create logger update level', async () => {
     clearAllLoggers();
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
-    const logger = createLogger<IMidwayLogger>('testLogger', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-      errorLogName: 'test-error.log',
-    });
 
-    logger.disableConsole();
+    const logger = createLogger<IMidwayLogger>('testLogger', {
+      format: (info) => {
+        return `${info.level.toUpperCase()} ${process.pid} ${info.args}`;
+      },
+      transports: {
+        file: new FileTransport({
+          dir: logsDir,
+          fileLogName: 'test-logger.log',
+        }),
+        error: new FileTransport({
+          level: 'error',
+          dir: logsDir,
+          fileLogName: 'test-error.log',
+        })
+      },
+    });
 
     logger.info('test console info');
     logger.error('test console error');
@@ -718,7 +601,7 @@ describe('/test/index.test.ts', () => {
 
     // after update level
 
-    logger.updateLevel('warn');
+    logger.level = 'warn';
 
     logger.info('test console info2');
     logger.error('test console error2');
@@ -736,8 +619,8 @@ describe('/test/index.test.ts', () => {
 
     // after disable error and file
 
-    logger.disableError();
-    logger.disableFile();
+    logger.remove('error');
+    logger.remove('file');
 
     logger.info('test console info3');
     logger.error('test console error3');
@@ -769,14 +652,25 @@ describe('/test/index.test.ts', () => {
     clearAllLoggers();
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
+
     const logger1 = createLogger<IMidwayLogger>('logger', {
-      dir: logsDir,
-      disableFile: true,
+      transports: {
+        error: new FileTransport({
+          level: 'error',
+          dir: logsDir,
+          fileLogName: 'common-error.log',
+        })
+      },
     });
 
     const logger2 = createLogger<IMidwayLogger>('logger', {
-      dir: logsDir,
-      disableFile: true,
+      transports: {
+        error: new FileTransport({
+          level: 'error',
+          dir: logsDir,
+          fileLogName: 'common-error.log',
+        })
+      },
     });
 
     expect(logger1).toEqual(logger2);
@@ -805,10 +699,13 @@ describe('/test/index.test.ts', () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
     const logger = createLogger<IMidwayLogger>('logger', {
-      dir: logsDir,
-      disableError: true,
-      level: 'info',
-      fileLogName: 'midway-core.log'
+      transports: {
+        file: new FileTransport({
+          level: 'info',
+          dir: logsDir,
+          fileLogName: 'midway-core.log',
+        })
+      },
     });
     logger.write('hello world');
     const buffer = Buffer.from('hello world', 'utf-8');
@@ -832,9 +729,13 @@ describe('/test/index.test.ts', () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
     const logger = createLogger<IMidwayLogger>('logger', {
-      dir: logsDir,
-      level: 'trace',
-      fileLogName: 'midway-core.log'
+      transports: {
+        file: new FileTransport({
+          level: 'silly',
+          dir: logsDir,
+          fileLogName: 'midway-core.log',
+        })
+      },
     });
     logger.write('hello world');
     const buffer = Buffer.from('hello world', 'utf-8');
@@ -861,33 +762,31 @@ describe('/test/index.test.ts', () => {
     await removeFileOrDir(logsDir);
 
     class CustomTransport extends EmptyTransport {
-      log(info, callback) {
-        const levelLowerCase = info.level;
+      log(level, meta, ...args) {
+        const levelLowerCase = level;
         if (levelLowerCase === 'error' || levelLowerCase === 'warn') {
-          writeFileSync(join(logsDir, 'test.log'), info.message);
+          writeFileSync(join(logsDir, 'test.log'), args[0] + os.EOL);
         }
-        callback();
       }
     }
 
     const logger = createLogger<IMidwayLogger>('logger', {
-      dir: logsDir,
-      disableError: true,
-      level: 'info',
-      fileLogName: 'midway-core.log'
+      transports: {
+        file: new FileTransport({
+          level: 'info',
+          dir: logsDir,
+          fileLogName: 'midway-core.log',
+        })
+      },
     });
-
-    expect(logger.isEnableConsole()).toBeTruthy();
-    expect(logger.isEnableFile()).toBeTruthy();
-    expect(logger.isEnableError()).toBeFalsy();
 
     const customTransport = new CustomTransport({
       level: 'warn',
     });
-    logger.add(customTransport);
+    logger.add('custom', customTransport);
     logger.info('hello world info');
     logger.warn('hello world warn');
-    logger.remove(customTransport);
+    logger.remove('custom');
     logger.warn('hello world another warn');
     await sleep();
 
@@ -933,92 +832,6 @@ describe('/test/index.test.ts', () => {
     expect(
       matchContentTimes(join(logsDir, 'test-logger.log'), 'file logger')
     ).toEqual(1);
-
-    await removeFileOrDir(logsDir);
-  });
-
-  it('should dynamic change info data', async () => {
-    clearAllLoggers();
-    const logsDir = join(__dirname, 'logs');
-    await removeFileOrDir(logsDir);
-
-    const logger = createFileLogger('file', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-    });
-
-    (logger as IMidwayLogger).updateTransformableInfo(info => {
-      info.timestamp = 'bbbb';
-      return info;
-    });
-    logger.info('file logger');
-    logger.info('file logger1');
-    logger.info('file logger2');
-    await sleep();
-
-    expect(matchContentTimes(join(logsDir, 'test-logger.log'), 'bbbb')).toEqual(
-      3
-    );
-
-    await removeFileOrDir(logsDir);
-  });
-
-  it.skip('should test container set level and disable api', async () => {
-    if (loggers.size > 0) {
-      clearAllLoggers();
-    }
-    const logger1 = createConsoleLogger('consoleLogger');
-    loggers.disableConsole();
-    // 后面的控制台输出应该都看不见
-    logger1.info('aaaa');
-    const logger2 = createConsoleLogger('anotherConsoleLogger');
-    logger2.info('bbbb');
-
-    // 恢复输出
-    loggers.restore();
-    logger1.info('cccc');
-    logger2.info('dddd');
-
-    clearAllLoggers();
-
-    const logsDir = join(__dirname, 'logs');
-    await removeFileOrDir(logsDir);
-
-    const logger3 = createFileLogger('fileLogger', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-    });
-
-    loggers.disableFile();
-    // 后面的文件应该不存在
-    logger3.info('aaaa');
-    const logger4 = createFileLogger('anotherFileLogger', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-    });
-    logger4.info('bbbb');
-
-    await sleep();
-    expect(matchContentTimes(join(logsDir, 'test-logger.log'), 'aaaa')).toEqual(
-      0
-    );
-    expect(matchContentTimes(join(logsDir, 'test-logger.log'), 'bbbb')).toEqual(
-      0
-    );
-
-    // 恢复输出
-    loggers.restore();
-    logger3.info('eeee');
-    logger4.info('ffff');
-
-    await sleep(2000);
-
-    expect(matchContentTimes(join(logsDir, 'test-logger.log'), 'eeee')).toEqual(
-      1
-    );
-    expect(matchContentTimes(join(logsDir, 'test-logger.log'), 'ffff')).toEqual(
-      1
-    );
 
     await removeFileOrDir(logsDir);
   });
@@ -1092,22 +905,24 @@ describe('/test/index.test.ts', () => {
 
   it('should test color with console', function () {
     clearAllLoggers();
-    const fn = jest.spyOn((console as any)._stdout, 'write');
-    const consoleLogger = createConsoleLogger('consoleLogger');
+    const fnStdout = jest.spyOn(process.stdout, 'write');
+    const fnStderr = jest.spyOn(process.stderr, 'write');
+    const consoleLogger = createConsoleLogger('consoleLogger', {
+      autoColors: true,
+    });
     consoleLogger.debug('test', 'test1', 'test2', 'test3');
     consoleLogger.info('test', 'test1', 'test2', 'test3');
     consoleLogger.warn('test', 'test1', 'test2', 'test3');
     consoleLogger.error('test', 'test1', 'test2', 'test3');
-    expect(fn.mock.calls[0][0]).toContain('\x1B');
+    expect(fnStdout.mock.calls[0][0]).toContain('\x1B');
+    expect(fnStderr.mock.calls[0][0]).toContain('\x1B');
   });
 
   it('should test no color with console', function () {
     clearAllLoggers();
-    process.env.MIDWAY_LOGGER_DISABLE_COLORS = 'true';
-    const fn = jest.spyOn((console as any)._stdout, 'write');
+    const fn = jest.spyOn(process.stdout, 'write');
     const consoleLogger = createConsoleLogger('consoleLogger');
     consoleLogger.debug('test', 'test1', 'test2', 'test3');
-    process.env.MIDWAY_LOGGER_DISABLE_COLORS = '';
     expect(fn.mock.calls[0][0]).not.toContain('\x1B');
   });
 
@@ -1116,7 +931,7 @@ describe('/test/index.test.ts', () => {
     const logger = createConsoleLogger(
       'globalOutputConsoleLogger',
       {
-        printFormat: fn,
+        format: fn,
       }
     ) as ILogger;
 
@@ -1125,11 +940,11 @@ describe('/test/index.test.ts', () => {
 
     const err = new Error('abc');
     logger.info(err);
-    expect(fn.mock.calls[1][0].originError).toEqual(err);
+    expect(fn.mock.calls[1][0].args[0]).toEqual(err);
 
     const err2 = new Error('abc2');
     logger.info('abc', err2);
-    expect(fn.mock.calls[2][0].originError).toEqual(err2);
+    expect(fn.mock.calls[2][0].args[1]).toEqual(err2);
   });
 
   it('should test change audit file logs', async () => {
@@ -1137,68 +952,30 @@ describe('/test/index.test.ts', () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
 
-    const logger = createFileLogger('file', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-      auditFileDir: join(logsDir, 'tmp'),
-      enableJSON: true,
-    });
-
-    logger.info('file logger');
-    logger.info('file logger1');
-    logger.error('file logger2');
-    await sleep();
-
-    const dir = readdirSync(join(logsDir, 'tmp'));
-    expect(dir.length).toEqual(2);
-
-    await removeFileOrDir(logsDir);
-  });
-
-  it('should support relative audit dir', async () => {
-    clearAllLoggers();
-    const logsDir = join(__dirname, 'logs');
-    await removeFileOrDir(logsDir);
-
-    const logger = createFileLogger('file', {
-      dir: logsDir,
-      fileLogName: 'test-logger.log',
-      auditFileDir: 'tmp',
-      enableJSON: true,
-    });
-
-    logger.info('file logger');
-    logger.info('file logger1');
-    logger.error('file logger2');
-    await sleep();
-
-    const dir = readdirSync(join(logsDir, 'tmp'));
-    expect(dir.length).toEqual(2);
-
-    await removeFileOrDir(logsDir);
-  });
-
-  it('should test transport with collect info', async () => {
-    clearAllLoggers();
-    let err;
-
-    class CustomTransport extends EmptyTransport {
-      log(info, callback) {
-        err = info.originError;
-        callback();
+    const logger = createLogger('file', {
+      transports: {
+        file: new FileTransport({
+          dir: logsDir,
+          fileLogName: 'test-logger.log',
+          auditFileDir: join(logsDir, 'tmp'),
+        }),
+        json: new JSONTransport({
+          dir: logsDir,
+          fileLogName: 'test-logger.json.log',
+          auditFileDir: join(logsDir, 'tmp'),
+        }),
       }
-    }
+    });
 
-    const logger = createConsoleLogger('test', {
-      level: 'debug',
-    }) as IMidwayLogger;
-
-    logger.add(new CustomTransport());
-
-    logger.error(new Error('abcdef'));
-
+    logger.info('file logger');
+    logger.info('file logger1');
+    logger.error('file logger2');
     await sleep();
 
-    expect(err).toBeDefined();
+    const dir = readdirSync(join(logsDir, 'tmp'));
+    expect(dir.length).toEqual(2);
+
+    await removeFileOrDir(logsDir);
   });
+
 });

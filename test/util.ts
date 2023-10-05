@@ -64,13 +64,7 @@ export const getChildProcessPid = (moduleFile) => {
 
 export const finishLogger = async (logger) => {
   await sleep(5000);
-  return new Promise<void>(resolve  => {
-    logger.on('finish', () => {
-      resolve()
-    });
-    logger.end();
-    logger.close();
-  })
+  logger.close();
 }
 
 export const getCurrentDateString = () => {

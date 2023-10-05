@@ -31,7 +31,7 @@ import { sleep } from '../util';
       filename: logFile,
       size: '2k',
       frequency: 'custom',
-      end_stream: true,
+      endStream: true,
     });
 
     for (let i = 0; i < 10; i++) {

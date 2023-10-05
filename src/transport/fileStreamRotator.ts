@@ -9,6 +9,7 @@ import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import * as assert from 'assert';
 import { debounce } from '../util';
+import { StreamOptions } from '../interface';
 
 const debug = debuglog('midway-logger');
 const staticFrequency = ['daily', 'test', 's', 'm', 'h', 'custom'];
@@ -206,14 +207,14 @@ export class FileStreamRotator {
   }
 
   /**
-   * Returns date string for a given format / date_format
+   * Returns date string for a given format / dateFormat
    * @param format
-   * @param date_format
+   * @param dateFormat
    * @param {boolean} utc
    * @returns {string}
    */
-  getDate(format, date_format, utc) {
-    date_format = date_format || DATE_FORMAT;
+  getDate(format, dateFormat, utc) {
+    dateFormat = dateFormat || DATE_FORMAT;
     const currentMoment = utc ? dayjs.utc() : dayjs().local();
     if (format && staticFrequency.indexOf(format.type) !== -1) {
       switch (format.type) {
@@ -221,30 +222,30 @@ export class FileStreamRotator {
           /*eslint-disable-next-line no-case-declarations*/
           const second =
             Math.floor(currentMoment.second() / format.digit) * format.digit;
-          return currentMoment.second(second).format(date_format);
+          return currentMoment.second(second).format(dateFormat);
         case 'm':
           /*eslint-disable-next-line no-case-declarations*/
           const minute =
             Math.floor(currentMoment.minute() / format.digit) * format.digit;
-          return currentMoment.minute(minute).format(date_format);
+          return currentMoment.minute(minute).format(dateFormat);
         case 'h':
           /*eslint-disable-next-line no-case-declarations*/
           const hour =
             Math.floor(currentMoment.hour() / format.digit) * format.digit;
-          return currentMoment.hour(hour).format(date_format);
+          return currentMoment.hour(hour).format(dateFormat);
         case 'daily':
         case 'custom':
         case 'test':
-          return currentMoment.format(date_format);
+          return currentMoment.format(dateFormat);
       }
     }
-    return currentMoment.format(date_format);
+    return currentMoment.format(dateFormat);
   }
 
   /**
    * Read audit json object from disk or return new object or null
-   * @param max_logs
-   * @param audit_file
+   * @param maxLogs
+   * @param auditFile
    * @param log_file
    * @returns {Object} auditLogSettings
    * @property {Object} auditLogSettings.keep
@@ -253,17 +254,17 @@ export class FileStreamRotator {
    * @property {String} auditLogSettings.auditLog
    * @property {Array} auditLogSettings.files
    */
-  setAuditLog(max_logs, audit_file, log_file) {
+  setAuditLog(maxLogs, auditFile, log_file) {
     let _rtn = null;
-    if (max_logs) {
-      const use_days = max_logs.toString().substr(-1);
-      const _num = max_logs.toString().match(/^(\d+)/);
+    if (maxLogs) {
+      const use_days = maxLogs.toString().substr(-1);
+      const _num = maxLogs.toString().match(/^(\d+)/);
 
       if (Number(_num[1]) > 0) {
         const baseLog = path.dirname(log_file.replace(/%DATE%.+/, '_filename'));
         try {
-          if (audit_file) {
-            const full_path = path.resolve(audit_file);
+          if (auditFile) {
+            const full_path = path.resolve(auditFile);
             _rtn = JSON.parse(
               fs.readFileSync(full_path, { encoding: 'utf-8' })
             );
@@ -282,7 +283,7 @@ export class FileStreamRotator {
               days: false,
               amount: Number(_num[1]),
             },
-            auditLog: audit_file || baseLog + '/' + '.audit.json',
+            auditLog: auditFile || baseLog + '/' + '.audit.json',
             files: [],
           };
         }
@@ -389,40 +390,9 @@ export class FileStreamRotator {
   /**
    *
    * @param options
-   * @param options.filename
-   * @param options.frequency
-   * @param options.date_format
-   * @param options.size
-   * @param options.max_logs
-   * @param options.audit_file
-   * @param options.file_options
-   * @param options.utc
-   * @param options.extension
-   * @param options.create_symlink
-   * @param options.symlink_name
    * @returns {Object} stream
    */
-  getStream(options: {
-    filename: string;
-    frequency?: string;
-    size?: string;
-    max_logs?: number | string;
-    end_stream?: boolean;
-    /**
-     * File extension to be added at the end of the filename
-     */
-    extension?: string;
-    create_symlink?: boolean;
-    date_format?: string;
-    audit_file?: string;
-    symlink_name?: string;
-    utc?: boolean;
-    file_options?: any;
-    /**
-     * Hash to be used to add to the audit log (md5, sha256)
-     */
-    audit_hash_type?: string;
-  }) {
+  getStream(options: StreamOptions) {
     let frequencyMetaData = null;
     let curDate = null;
 
@@ -433,14 +403,14 @@ export class FileStreamRotator {
     }
 
     const auditLog = this.setAuditLog(
-      options.max_logs,
-      options.audit_file,
+      options.maxFiles,
+      options.auditFile,
       options.filename
     );
 
     if (auditLog != null) {
       auditLog.hashType =
-        options.audit_hash_type !== undefined ? options.audit_hash_type : 'md5';
+        options.auditHashType !== undefined ? options.auditHashType : 'md5';
     }
 
     let fileSize = null;
@@ -450,9 +420,9 @@ export class FileStreamRotator {
       fileSize = this.parseFileSize(options.size);
     }
 
-    let dateFormat = options.date_format || DATE_FORMAT;
+    let dateFormat = options.dateFormat || DATE_FORMAT;
     if (frequencyMetaData && frequencyMetaData.type === 'daily') {
-      if (!options.date_format) {
+      if (!options.dateFormat) {
         dateFormat = 'YYYY-MM-DD';
       }
       if (
@@ -474,7 +444,7 @@ export class FileStreamRotator {
         : '';
     }
 
-    options.create_symlink = options.create_symlink || false;
+    options.createSymlink = options.createSymlink || false;
     options.extension = options.extension || '';
     const filename = options.filename;
     let oldFile = null;
@@ -541,9 +511,9 @@ export class FileStreamRotator {
     // 循环创建目录和文件，类似 mkdirp
     mkDirForFile(logfile);
 
-    const file_options = options.file_options || { flags: 'a' };
+    const fileOptions = options.fileOptions || { flags: 'a' };
     // 创建文件流
-    let rotateStream = fs.createWriteStream(logfile, file_options);
+    let rotateStream = fs.createWriteStream(logfile, fileOptions);
     if (
       (curDate &&
         frequencyMetaData &&
@@ -570,8 +540,8 @@ export class FileStreamRotator {
         // 创建审计的日志，记录最新的日志文件，切割的记录等
         stream.auditLog = this.addLogToAudit(newLog, stream.auditLog, stream);
         // 创建软链
-        if (options.create_symlink) {
-          createCurrentSymLink(newLog, options.symlink_name);
+        if (options.createSymlink) {
+          createCurrentSymLink(newLog, options.symlinkName);
         }
       });
 
@@ -627,7 +597,7 @@ export class FileStreamRotator {
           oldFile = logfile;
           logfile = newLogfile;
           // Thanks to @mattberther https://github.com/mattberther for raising it again.
-          if (options.end_stream === true) {
+          if (options.endStream === true) {
             rotateStream.end();
           } else {
             rotateStream.destroy();
@@ -635,7 +605,7 @@ export class FileStreamRotator {
 
           mkDirForFile(logfile);
 
-          rotateStream = fs.createWriteStream(newLogfile, file_options);
+          rotateStream = fs.createWriteStream(newLogfile, fileOptions);
           stream.emit('new', newLogfile);
           stream.emit('rotate', oldFile, newLogfile);
           BubbleEvents(rotateStream, stream);

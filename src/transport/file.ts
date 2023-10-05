@@ -1,38 +1,131 @@
-import { ITransport } from '../interface';
-import { mkdirSync } from 'fs';
-import { format } from 'util';
+import {
+  ITransport,
+  FileTransportOptions,
+  LoggerLevel,
+  StreamOptions,
+  LogMeta,
+} from '../interface';
+import { Transport } from './transport';
+import { FileStreamRotator } from './fileStreamRotator';
+import * as path from 'path';
+import * as zlib from 'zlib';
+import * as fs from 'fs';
+import {
+  getMaxSize,
+  isEnableLevel,
+  isValidDirName,
+  isValidFileName,
+} from '../util';
+import { hash } from '../util/hash';
 
-export class FileTransport implements ITransport {
-  constructor(options) {
-    this._stream = null;
-    this.reload();
-  }
+export class FileTransport
+  extends Transport<FileTransportOptions>
+  implements ITransport
+{
+  protected logStream: any;
+  protected bufSize = 0;
+  protected buf = [];
+  protected timer: NodeJS.Timer;
 
-  get defaults() {
-    return utils.assign(super.defaults, {
-      file: null,
-      level: 'INFO',
+  constructor(
+    protected readonly options: FileTransportOptions = {} as FileTransportOptions
+  ) {
+    super(options);
+    if (this.options.bufferWrite) {
+      this.timer = this.createInterval();
+    }
+
+    if (
+      !isValidFileName(this.options.fileLogName) ||
+      !isValidDirName(this.options.dir)
+    ) {
+      throw new Error('Your path or filename contain an invalid character.');
+    }
+
+    const rotator = new FileStreamRotator();
+
+    const defaultStreamOptions = {
+      frequency: 'custom',
+      dateFormat: 'YYYY-MM-DD',
+      endStream: true,
+      fileOptions: { flags: 'a' },
+      utc: false,
+      extension: '',
+      createSymlink: true,
+      maxFiles: '7d',
+      zippedArchive: false,
+    } as Omit<StreamOptions, 'filename'>;
+
+    this.logStream = rotator.getStream({
+      ...defaultStreamOptions,
+      filename: path.join(this.options.dir, this.options.fileLogName),
+      size: getMaxSize(options.maxSize || '200m'),
+      symlinkName: this.options.fileLogName,
+      auditFile: path.join(
+        options.auditFileDir || this.options.dir,
+        '.' + hash(options) + '-audit.json'
+      ),
+      ...options,
     });
+
+    this.logStream.on('logRemoved', params => {
+      if (options.zippedArchive) {
+        const gzName = params.name + '.gz';
+        if (fs.existsSync(gzName)) {
+          try {
+            fs.unlinkSync(gzName);
+          } catch (_err) {
+            // file is there but we got an error when trying to delete,
+            // so permissions problem or concurrency issue and another
+            // process already deleted it we could detect the concurrency
+            // issue by checking err.type === ENOENT or EACCESS for
+            // permissions ... but then?
+          }
+          return;
+        }
+      }
+    });
+
+    if (options.zippedArchive) {
+      this.logStream.on('rotate', oldFile => {
+        const oldFileExist = fs.existsSync(oldFile);
+        const gzExist = fs.existsSync(oldFile + '.gz');
+        if (!oldFileExist || gzExist) {
+          return;
+        }
+
+        const gzip = zlib.createGzip();
+        const inp = fs.createReadStream(oldFile);
+        const out = fs.createWriteStream(oldFile + '.gz');
+        inp
+          .pipe(gzip)
+          .pipe(out)
+          .on('finish', () => {
+            if (fs.existsSync(oldFile)) {
+              fs.unlinkSync(oldFile);
+            }
+          });
+      });
+    }
   }
 
-  /**
-   * reload file stream
-   */
-  reload() {
-    this._closeStream();
-    this._stream = this._createStream();
-  }
+  log(level: LoggerLevel, meta: LogMeta, ...args) {
+    if (!isEnableLevel(level, this.options.level)) {
+      return;
+    }
+    let buf = this.format(level, meta, args);
 
-  /**
-   * output log, see {@link Transport#log}
-   * @param  {String} level - log level
-   * @param  {Array} args - all arguments
-   * @param  {Object} meta - meta information
-   */
-  log(level, args, meta) {
-    const buf = format(level, args, meta, this.options);
-    if (buf.length) {
-      this._write(buf);
+    buf += this.options.eol;
+
+    if (this.options.bufferWrite) {
+      this.bufSize += buf.length;
+      this.buf.push(buf);
+      if (this.buf.length > this.options.bufferMaxLength) {
+        this.flush();
+      }
+    } else {
+      this.logStream.write(buf);
+      // this.emit('logged', info);
     }
   }
 
@@ -40,39 +133,75 @@ export class FileTransport implements ITransport {
    * close stream
    */
   close() {
-    this._closeStream();
+    if (this.options.bufferWrite) {
+      if (this.buf && this.buf.length > 0) {
+        this.flush();
+      }
+
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+    }
+
+    if (this.logStream) {
+      this.logStream.end();
+      // 处理重复调用 close
+      this.logStream = null;
+    }
+  }
+
+  flush() {
+    if (this.buf.length > 0 && this.writable) {
+      this.logStream.write(this.buf.join(''));
+      this.buf = [];
+      this.bufSize = 0;
+    }
   }
 
   /**
-   * create stream
-   * @return {Stream} return writeStream
-   * @private
+   * create interval to flush log into file
    */
-  _createStream() {
-    mkdirSync(path.dirname(this.options.file), { recursive: true });
-    const stream = fs.createWriteStream(this.options.file, { flags: 'a' });
-
-    const onError = err => {
-      console.error('%s ERROR %s [egg-logger] [%s] %s',
-        utility.logDate(','), process.pid, this.options.file, err.stack);
-      this.reload();
-      console.warn('%s WARN %s [egg-logger] [%s] reloaded', utility.logDate(','), process.pid, this.options.file);
-    };
-    // only listen error once because stream will reload after error
-    stream.once('error', onError);
-    stream._onError = onError;
-    return stream;
+  createInterval() {
+    return setInterval(() => this.flush(), this.options.bufferFlushInterval);
   }
 
-  /**
-   * close stream
-   * @private
-   */
-  _closeStream() {
-    if (this._stream) {
-      this._stream.end();
-      this._stream.removeListener('error', this._stream._onError);
-      this._stream = null;
+  get writable() {
+    return (
+      this.logStream &&
+      !this.logStream.closed &&
+      this.logStream.writable &&
+      !this.logStream.destroyed
+    );
+  }
+}
+
+export class JSONTransport extends FileTransport {
+  log(level: LoggerLevel, meta: LogMeta, ...args) {
+    if (!isEnableLevel(level, this.options.level)) {
+      return;
+    }
+    let buf = this.format(level, meta, args);
+
+    if (typeof buf === 'string' || Buffer.isBuffer(buf)) {
+      buf = JSON.stringify({
+        message: buf.toString(),
+      });
+    } else {
+      buf = JSON.stringify(buf);
+    }
+
+    buf += this.options.eol;
+
+    if (this.options.bufferWrite) {
+      this.bufSize += buf.length;
+      this.buf.push(buf);
+      if (this.buf.length > this.options.bufferMaxLength) {
+        this.flush();
+      }
+    } else {
+      this.logStream.write(buf);
+      // this.emit('logged', info);
     }
   }
 }

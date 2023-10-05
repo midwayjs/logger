@@ -15,14 +15,14 @@ describe('/test/stream-rotate.test.ts', () => {
     const rotatingLogStream = rotator.getStream({
       filename: 'logs/1s/testlog-%DATE%.log',
       frequency: 'custom',
-      date_format: 'YYYY-MM-DD.HH.mm',
+      dateFormat: 'YYYY-MM-DD.HH.mm',
       size: '50k',
-      max_logs: '5',
-      audit_file: '/tmp/audit-1s.json',
-      end_stream: false,
+      maxFiles: '5',
+      auditFile: '/tmp/audit-1s.json',
+      endStream: false,
       utc: true,
       extension: '.logs',
-      audit_hash_type: 'sha256',
+      auditHashType: 'sha256',
     });
 
     rotatingLogStream.on('error', function (err) {
@@ -81,15 +81,15 @@ describe('/test/stream-rotate.test.ts', () => {
     const rotatingLogStream = rotator.getStream({
       filename: 'logs/1m/testlog-%DATE%',
       frequency: '1m',
-      date_format: 'YYYY-MM-DD.HH.mm',
+      dateFormat: 'YYYY-MM-DD.HH.mm',
       size: '100k',
-      max_logs: '10',
-      audit_file: '/tmp/audit.json',
-      end_stream: false,
+      maxFiles: '10',
+      auditFile: '/tmp/audit.json',
+      endStream: false,
       utc: true,
       extension: '.log',
-      create_symlink: true,
-      symlink_name: 'tail.log'
+      createSymlink: true,
+      symlinkName: 'tail.log'
     });
 
     rotatingLogStream.on('error', function () {
@@ -151,10 +151,10 @@ describe('/test/stream-rotate.test.ts', () => {
       filename: './logs/application-%DATE%',
       frequency: 'custom',
       // size: '50k',
-      max_logs: 4,
-      end_stream: true,
+      maxFiles: 4,
+      endStream: true,
       extension: ".log",
-      create_symlink: true
+      createSymlink: true
     });
     let count = 0;
     const i = setInterval(() => {
@@ -193,7 +193,7 @@ describe('/test/stream-rotate.test.ts', () => {
     const logStream = rotator.getStream({
       filename: logFile,
       size: '2k',
-      end_stream: true,
+      endStream: true,
     });
 
     let i = 100;
@@ -225,7 +225,7 @@ describe('/test/stream-rotate.test.ts', () => {
     const logStream = rotator.getStream({
       filename: logFile,
       size: '2k',
-      end_stream: true,
+      endStream: true,
     });
 
     let i = 100;
@@ -255,7 +255,7 @@ describe('/test/stream-rotate.test.ts', () => {
     const logStream = rotator.getStream({
       filename: logFile,
       size: '1k',
-      end_stream: true,
+      endStream: true,
     });
 
     // 第一次写入 800k
@@ -277,8 +277,8 @@ describe('/test/stream-rotate.test.ts', () => {
     const logStream = rotator.getStream({
       filename: logFile,
       frequency: '5s',
-      date_format: 'YYYY-MM-DD-HHmmss',
-      end_stream: true,
+      dateFormat: 'YYYY-MM-DD-HHmmss',
+      endStream: true,
     });
 
     for (let i = 0; i < 10; i++) {
@@ -317,9 +317,9 @@ describe('/test/stream-rotate.test.ts', () => {
     const rotatingLogStream = rotator.getStream({
       filename: 'logs/nodate/logfile',
       size: '50k',
-      max_logs: '5',
-      audit_file: 'logs/audit-nodate.json',
-      end_stream: false,
+      maxFiles: '5',
+      auditFile: 'logs/audit-nodate.json',
+      endStream: false,
       extension: '.log'
     });
 

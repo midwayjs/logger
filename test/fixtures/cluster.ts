@@ -1,4 +1,4 @@
-import { MidwayBaseLogger } from '../../src';
+import { ConsoleTransport, FileTransport, Logger } from '../../src';
 import { join } from 'path';
 import * as cluster from 'cluster';
 
@@ -17,19 +17,31 @@ if (cluster['isMaster']) {
     console.log(`worker ${worker.process.pid} died`);
   });
 } else {
-  const logger = new MidwayBaseLogger({
-    dir: join(__dirname, 'logs'),
-    fileLogName: 'midway-core.log'
+  const logger = new Logger({
+    transports: {
+      console: new ConsoleTransport(),
+      file: new FileTransport({
+        dir: join(__dirname, 'logs'),
+        fileLogName: 'midway-core.log'
+      }),
+      error: new FileTransport({
+        level: 'error',
+        dir: join(__dirname, 'logs'),
+        fileLogName: 'common-error.log',
+      }),
+    }
   });
+
   setTimeout( () => {
     logger.error(process.pid  + ': output application error');
     logger.error(process.pid  + ': output application error');
     logger.error(process.pid  + ': output application error');
     logger.error(process.pid  + ': output application error');
-    logger.end();
-  },  1000);
+    logger.close();
 
-  logger.on('finish', () => {
-    process.exit(0);
-  });
+    setTimeout( () => {
+      process.exit(0);
+    }, 100);
+
+  },  1000);
 }
