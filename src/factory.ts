@@ -1,23 +1,27 @@
-import { ILogger, LoggerFactoryOptions, LoggerOptions } from './interface';
+import {
+  ILogger,
+  LegacyLoggerOptions,
+  LoggerFactoryOptions,
+  LoggerOptions,
+} from './interface';
 import { Logger } from './logger';
 import * as util from 'util';
+import { join } from 'path';
+import { isDevelopmentEnvironment } from './util';
 const debug = util.debuglog('midway:debug');
 
 export class LoggerFactory extends Map<string, ILogger> {
-  private aliasMap = new Map<string, string>();
   constructor(protected factoryOptions: LoggerFactoryOptions = {}) {
     super();
   }
 
-  createLogger(name: string, options: LoggerOptions): ILogger {
+  createLogger(
+    name: string,
+    options: LoggerOptions | LegacyLoggerOptions
+  ): ILogger {
     if (!this.has(name)) {
       debug('[logger]: Create logger "%s" with options %j', name, options);
       const logger = new Logger(Object.assign(options, this.factoryOptions));
-
-      if (options.aliasName) {
-        this.aliasMap.set(options.aliasName, name);
-      }
-
       this.addLogger(name, logger);
       return logger;
     }
@@ -37,7 +41,7 @@ export class LoggerFactory extends Map<string, ILogger> {
         if (logger['on']) {
           (logger as any).on('close', () => this.delete(name));
         }
-        this.set(name, logger);
+        this.set(name, logger as Logger);
       }
     } else {
       throw new Error(`logger id ${name} has duplicate`);
@@ -56,7 +60,7 @@ export class LoggerFactory extends Map<string, ILogger> {
   }
 
   get(name) {
-    return super.get(this.aliasMap.get(name) ?? name);
+    return super.get(name);
   }
 
   /**
@@ -71,5 +75,42 @@ export class LoggerFactory extends Map<string, ILogger> {
     }
 
     Array.from(this.keys()).forEach(key => this.removeLogger(key));
+  }
+
+  getDefaultMidwayLoggerConfig(appInfo: {
+    pkg: Record<string, any>;
+    name: string;
+    baseDir: string;
+    appDir: string;
+    HOME: string;
+    root: string;
+    env: string;
+  }) {
+    const isDevelopment = isDevelopmentEnvironment(appInfo.env);
+    const logRoot = process.env['MIDWAY_LOGGER_WRITEABLE_DIR'] ?? appInfo.root;
+    return {
+      midwayLogger: {
+        default: {
+          dir: join(logRoot, 'logs', appInfo.name),
+          level: 'info',
+          consoleLevel: isDevelopment ? 'info' : 'warn',
+          auditFileDir: '.audit',
+        },
+        clients: {
+          coreLogger: {
+            level: isDevelopment ? 'info' : 'warn',
+            fileLogName: 'midway-core.log',
+          },
+          appLogger: {
+            fileLogName: 'midway-app.log',
+            aliasName: 'logger',
+          },
+        },
+      },
+    };
+  }
+
+  createContextLogger(ctx: any, appLogger: ILogger): ILogger {
+    return (appLogger as Logger).createContextLogger(ctx);
   }
 }

@@ -1,18 +1,24 @@
-import { LoggerLevel } from '../interface';
+import {
+  ConsoleTransportOptions,
+  FileTransportOptions,
+  LegacyLoggerOptions,
+  LoggerLevel,
+  LoggerOptions
+} from '../interface';
 import { DefaultLogLevels } from '../constants';
 import * as fs from 'fs';
 import { dirname, basename } from 'path';
 import * as crypto from 'crypto';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
+import { ConsoleTransport } from '../transport/console';
+import { FileTransport } from '../transport/file';
 dayjs.extend(utc);
 
 export function isEnableLevel(inputLevel: LoggerLevel, baseLevel: LoggerLevel) {
   if (!inputLevel || !baseLevel) {
     return true;
   }
-  inputLevel = inputLevel.toLowerCase() as LoggerLevel;
-  baseLevel = baseLevel.toLowerCase() as LoggerLevel;
   return DefaultLogLevels[inputLevel] <= DefaultLogLevels[baseLevel];
 }
 
@@ -174,4 +180,103 @@ export function getFormatDate(
 ) {
   const date = utc ? dayjs.utc(timestamp) : dayjs(timestamp);
   return date.format(datePattern);
+}
+
+export const isDevelopmentEnvironment = env => {
+  return ['local', 'test', 'unittest'].includes(env);
+};
+
+export function formatLegacyLoggerOptions(
+  unknownLoggerOptions: LoggerOptions | LegacyLoggerOptions
+): LoggerOptions {
+  const newOptionsKeys = [
+    'level',
+    'format',
+    'contextFormat',
+    'eol',
+    'transports',
+  ];
+  // 如果是旧的配置，需要转换成新的配置，判断是否有 level, format, contextFormat, eol, transports 之外的属性
+  if (
+    Object.keys(unknownLoggerOptions).some(key => !newOptionsKeys.includes(key))
+  ) {
+    const options = unknownLoggerOptions as LegacyLoggerOptions;
+    let consoleTransportOptions,
+      fileTransportOptions,
+      errTransportOptions,
+      jsonTransportOptions;
+
+    if (options.enableConsole !== false && options.disableConsole !== true) {
+      consoleTransportOptions = {
+        level: options.consoleLevel,
+      } as ConsoleTransportOptions;
+    }
+
+    if (options.enableFile !== false && options.disableFile !== true) {
+      fileTransportOptions = {
+        level: options.fileLevel,
+        dir: options.dir,
+        fileLogName: options.fileLogName,
+        createSymlink:
+          options.disableFileSymlink !== true ?? options.disableSymlink !== true,
+        maxSize: options.fileMaxSize ?? options.maxSize,
+        maxFiles: options.fileMaxFiles ?? options.maxFiles,
+        zippedArchive: options.fileZippedArchive ?? options.zippedArchive,
+        datePattern: options.fileDatePattern ?? options.datePattern,
+        auditFileDir: options.auditFileDir,
+        fileOptions: options.fileOptions,
+      } as FileTransportOptions;
+    }
+
+    if (options.enableError !== false && options.disableError !== true) {
+      errTransportOptions = {
+        level: 'error',
+        dir: options.errorDir ?? options.dir,
+        fileLogName: options.errorLogName,
+        createSymlink:
+          options.disableErrorSymlink !== true ?? options.disableSymlink !== true,
+        maxSize: options.errMaxSize ?? options.maxSize,
+        maxFiles: options.errMaxFiles ?? options.maxFiles,
+        zippedArchive: options.errZippedArchive ?? options.zippedArchive,
+        datePattern: options.errDatePattern ?? options.datePattern,
+        auditFileDir: options.auditFileDir,
+        fileOptions: options.fileOptions,
+      } as FileTransportOptions;
+    }
+
+    if (options.enableJSON) {
+      jsonTransportOptions = {
+        level: options.jsonLevel,
+        format: options.jsonFormat,
+        dir: options.jsonDir ?? options.dir,
+        fileLogName: options.jsonLogName,
+        createSymlink:
+          options.disableJSONSymlink !== true ?? options.disableSymlink,
+        maxSize: options.jsonMaxSize ?? options.maxSize,
+        maxFiles: options.jsonMaxFiles ?? options.maxFiles,
+        eol: options.jsonEol,
+        zippedArchive: options.jsonZippedArchive ?? options.zippedArchive,
+        datePattern: options.jsonDatePattern ?? options.datePattern,
+        auditFileDir: options.auditFileDir,
+        fileOptions: options.fileOptions,
+      } as FileTransportOptions;
+    }
+
+    return {
+      level: options.level ?? 'silly',
+      format: options.format,
+      contextFormat: options.contextFormat,
+      eol: options.eol,
+      transports: {
+        console:
+          consoleTransportOptions &&
+          new ConsoleTransport(consoleTransportOptions),
+        file: fileTransportOptions && new FileTransport(fileTransportOptions),
+        error: errTransportOptions && new FileTransport(errTransportOptions),
+        json: jsonTransportOptions && new FileTransport(jsonTransportOptions),
+      },
+    };
+  }
+
+  return unknownLoggerOptions as LoggerOptions;
 }

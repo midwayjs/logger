@@ -33,6 +33,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
   implements ITransport
 {
   protected loggerOptions: LoggerOptions;
+  protected LEVEL: string;
 
   constructor(
     protected readonly options: TransportOptions = {} as TransportOptions
@@ -45,6 +46,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     this.options.contextFormat =
       this.options.contextFormat || options.contextFormat;
     this.options.eol = this.options.eol || options.eol;
+    this.LEVEL = this.options.level.toUpperCase();
   }
 
   format(
@@ -79,6 +81,8 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
   }
 
   getLoggerInfo(level: LoggerLevel, meta: LogMeta, args: any[]): LoggerInfo {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
     const levelString = level || '';
     const info = {
       level: levelString,
@@ -89,7 +93,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     Object.defineProperties(info, {
       LEVEL: {
         get() {
-          return levelString.toUpperCase();
+          return self.LEVEL;
         },
         enumerable: false,
       },
@@ -128,13 +132,17 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
 
   set level(level: LoggerLevel) {
     this.options.level = level;
+    this.LEVEL = level.toUpperCase();
   }
 
-  abstract log(level: LoggerLevel | false, meta, ...args: any[]): void;
+  abstract log(level: LoggerLevel | false, meta: LogMeta, ...args: any[]): void;
 
   abstract close();
 }
 
+/**
+ * @deprecated
+ */
 export class EmptyTransport extends Transport<any> {
   log(level: LoggerLevel | false, ...args: any[]) {}
 

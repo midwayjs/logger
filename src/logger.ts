@@ -1,20 +1,25 @@
 import {
   ILogger,
   ITransport,
+  LegacyLoggerOptions,
   LoggerLevel,
   LoggerOptions,
   LogMeta,
 } from './interface';
-import { isEnableLevel } from './util';
+import { formatLegacyLoggerOptions, isEnableLevel } from './util';
 import { EOL } from 'os';
 
 export class Logger implements ILogger {
   private transports: Map<string, ITransport> = new Map();
   private closeHandlers: Array<() => void> = [];
+  protected options: LoggerOptions;
 
-  constructor(protected options: LoggerOptions = {}) {
-    options.level = options.level || 'silly';
-    options.eol = options.eol || EOL;
+  constructor(unknownLoggerOptions: LoggerOptions | LegacyLoggerOptions = {}) {
+    this.options = formatLegacyLoggerOptions(
+      unknownLoggerOptions
+    ) as LoggerOptions;
+    this.options.level = this.options.level || 'silly';
+    this.options.eol = this.options.eol || EOL;
     if (this.options.transports) {
       for (const name in this.options.transports) {
         this.add(name, this.options.transports[name]);
