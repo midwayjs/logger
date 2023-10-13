@@ -98,11 +98,12 @@ export class LoggerFactory extends Map<string, ILogger> {
             },
             file: {
               dir: join(logRoot, 'logs', appInfo.name),
-              fileLogName: 'midway-core.log',
+              fileLogName: 'midway-app.log',
               auditFileDir: '.audit',
             },
             error: {
               dir: join(logRoot, 'logs', appInfo.name),
+              fileLogName: 'common-error.log',
               auditFileDir: '.audit',
             },
           },
@@ -113,7 +114,6 @@ export class LoggerFactory extends Map<string, ILogger> {
           },
           appLogger: {
             fileLogName: 'midway-app.log',
-            aliasName: 'logger',
           },
         },
       },
