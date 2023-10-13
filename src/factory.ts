@@ -21,7 +21,9 @@ export class LoggerFactory extends Map<string, ILogger> {
   ): ILogger {
     if (!this.has(name)) {
       debug('[logger]: Create logger "%s" with options %j', name, options);
-      const logger = new Logger(formatLegacyLoggerOptions(Object.assign(options, this.factoryOptions)));
+      const logger = new Logger(
+        formatLegacyLoggerOptions(Object.assign(options, this.factoryOptions))
+      );
       this.addLogger(name, logger);
       return logger;
     }
