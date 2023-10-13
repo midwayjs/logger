@@ -174,6 +174,13 @@ export class FileTransport
   }
 }
 
+export class ErrorTransport extends FileTransport {
+  constructor(options: FileTransportOptions) {
+    options.level = 'error';
+    super(options);
+  }
+}
+
 export class JSONTransport extends FileTransport {
   log(level: LoggerLevel, meta: LogMeta, ...args) {
     if (!isEnableLevel(level, this.options.level)) {

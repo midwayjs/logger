@@ -16,8 +16,6 @@ export * from './transport/file';
 export * from './transport/console';
 
 export const loggers = new LoggerFactory();
-export const MidwayDelegateLogger = {};
-export const MidwayBaseLogger: any = {};
 export const clearAllLoggers = () => {
   loggers.close();
 };

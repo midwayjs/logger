@@ -20,13 +20,19 @@ const logger = loggers.createLogger('logger', {
 })
 ```
 
-Create console, file and error Logger.(default logger, include console, file and error 3 transports)
+Create logger with console and file transports.
 
 ```typescript
+import { loggers, ConsoleTransport, FileTransport } from '@midwayjs/logger';
+
 const logger = loggers.createLogger('logger', {
-  dir: '...',
-  fileLogName: 'app.log',
-  errorLogName: 'error.log',
+  transports: {
+    console: new ConsoleTransport(),
+    file: new FileTransport({
+      dir: '...',
+      fileLogName: 'app.log',
+    }),
+  }
 })
 ```
 
@@ -47,6 +53,7 @@ logger.debug('debug info');
 logger.info('启动耗时 %d ms', Date.now() - start);
 logger.warn('warning!');
 logger.error(new Error('my error'));
+logger.write('abcde);
 ```
 
 ## Logger Level
@@ -71,10 +78,8 @@ Set level for all transports
 
 ```typescript
 const logger = loggers.createLogger('logger', {
-  dir: '...',
+  // ...
   level: 'warn',
-  fileLogName: 'app.log',
-  errorLogName: 'error.log',
 });
 
 // not output
@@ -90,22 +95,19 @@ Change file and error logger format.
 
 ```typescript
 const logger = loggers.createLogger('logger', {
-  dir: '...',
-  level: 'warn',
-  fileLogName: 'app.log',
-  errorLogName: 'error.log',
+  // ...
   format: info => {
     return `${info.timestamp} ${info.message}`;
   }
 });
 ```
 
-info is a winston metadata we called 'MidwayTransformableInfo' and include some [default value](https://github.com/midwayjs/logger/blob/main/src/interface.ts#L265);
+info is a default metadata, include some properties.
 
 
 ## Logger Options
 
-find more options in [interface](https://github.com/midwayjs/logger/blob/main/src/interface.ts#L70).
+find more options in [interface](https://github.com/midwayjs/logger/blob/main/src/interface.ts).
 
 
 ## License

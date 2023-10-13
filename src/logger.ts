@@ -1,23 +1,31 @@
 import {
+  BaseTransportOptions,
   ILogger,
   ITransport,
-  LegacyLoggerOptions,
   LoggerLevel,
   LoggerOptions,
   LogMeta,
 } from './interface';
-import { formatLegacyLoggerOptions, isEnableLevel } from './util';
+import { isEnableLevel } from './util';
 import { EOL } from 'os';
+import { Transport } from './transport/transport';
+import { ConsoleTransport } from './transport/console';
+import { ErrorTransport, FileTransport, JSONTransport } from './transport/file';
+
+export const TransportManager = new Map();
+
+TransportManager.set('console', ConsoleTransport);
+TransportManager.set('file', FileTransport);
+TransportManager.set('error', ErrorTransport);
+TransportManager.set('json', JSONTransport);
 
 export class Logger implements ILogger {
   private transports: Map<string, ITransport> = new Map();
   private closeHandlers: Array<() => void> = [];
   protected options: LoggerOptions;
 
-  constructor(unknownLoggerOptions: LoggerOptions | LegacyLoggerOptions = {}) {
-    this.options = formatLegacyLoggerOptions(
-      unknownLoggerOptions
-    ) as LoggerOptions;
+  constructor(options: LoggerOptions = {}) {
+    this.options = options;
     this.options.level = this.options.level || 'silly';
     this.options.eol = this.options.eol || EOL;
     if (this.options.transports) {
@@ -67,9 +75,26 @@ export class Logger implements ILogger {
     this.transit('silly', {}, ...args);
   }
 
-  add(name: string, transport: ITransport) {
-    transport.setLoggerOptions(this.options);
-    this.transports.set(name, transport);
+  add(
+    name: string,
+    transport: ITransport | Record<string, BaseTransportOptions>
+  ) {
+    if (transport) {
+      let transportInstance: ITransport;
+      if (!(transport instanceof Transport)) {
+        if (!TransportManager.has(name)) {
+          throw new Error(`Transport ${name} is not supported`);
+        } else {
+          transportInstance = new (TransportManager.get(name) as new (
+            ...args
+          ) => ITransport)(transport);
+        }
+      } else {
+        transportInstance = transport as ITransport;
+      }
+      transportInstance.setLoggerOptions(this.options);
+      this.transports.set(name, transportInstance);
+    }
   }
 
   get(name: string) {

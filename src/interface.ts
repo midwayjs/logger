@@ -42,7 +42,7 @@ export interface LoggerOptions {
   /**
    * Output transport
    */
-  transports?: Record<string, ITransport>;
+  transports?: Record<string, ITransport | Record<string, any>>;
 }
 
 export interface ITransport {

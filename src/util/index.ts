@@ -1,18 +1,10 @@
-import {
-  ConsoleTransportOptions,
-  FileTransportOptions,
-  LegacyLoggerOptions,
-  LoggerLevel,
-  LoggerOptions
-} from '../interface';
+import { LegacyLoggerOptions, LoggerLevel, LoggerOptions } from '../interface';
 import { DefaultLogLevels } from '../constants';
 import * as fs from 'fs';
 import { dirname, basename } from 'path';
 import * as crypto from 'crypto';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
-import { ConsoleTransport } from '../transport/console';
-import { FileTransport } from '../transport/file';
 dayjs.extend(utc);
 
 export function isEnableLevel(inputLevel: LoggerLevel, baseLevel: LoggerLevel) {
@@ -186,96 +178,323 @@ export const isDevelopmentEnvironment = env => {
   return ['local', 'test', 'unittest'].includes(env);
 };
 
+/**
+ * 格式：key: [transport分类，映射的key，不存在时的默认key]
+ */
+const oldOptionsKeys: {
+  [key: string]: {
+    /**
+     * transport分类
+     */
+    category?:
+      | 'console'
+      | 'file'
+      | 'error'
+      | 'json'
+      | 'all'
+      | 'top'
+      | Array<'console' | 'file' | 'error' | 'json'>;
+    /**
+     * 是否不参与赋值，有些字段在新版本不需要
+     */
+    ignore?: boolean;
+    /**
+     * 映射的新 key
+     */
+    mappingKey?: string;
+    /**
+     * 值取反
+     */
+    reverseValue?: boolean;
+    /**
+     * 如果值存在，是否覆盖
+     */
+    overwriteIfExists?: boolean;
+  };
+} = {
+  consoleLevel: {
+    category: 'console',
+    mappingKey: 'level',
+  },
+  fileLevel: {
+    category: 'file',
+    mappingKey: 'level',
+  },
+  jsonLevel: {
+    category: 'json',
+    mappingKey: 'level',
+  },
+  jsonFormat: {
+    category: 'json',
+    mappingKey: 'format',
+  },
+  dir: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'dir',
+  },
+  errorDir: {
+    category: 'error',
+    mappingKey: 'dir',
+    overwriteIfExists: true,
+  },
+  jsonDir: {
+    category: 'json',
+    mappingKey: 'dir',
+    overwriteIfExists: true,
+  },
+  aliasName: {
+    ignore: true,
+  },
+  fileLogName: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'fileLogName',
+  },
+  errorLogName: {
+    category: 'error',
+    mappingKey: 'fileLogName',
+    overwriteIfExists: true,
+  },
+  jsonLogName: {
+    category: 'json',
+    mappingKey: 'fileLogName',
+    overwriteIfExists: true,
+  },
+  enableConsole: {
+    ignore: true,
+  },
+  enableFile: {
+    ignore: true,
+  },
+  enableError: {
+    ignore: true,
+  },
+  enableJSON: {
+    ignore: true,
+  },
+  disableSymlink: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'createSymlink',
+  },
+  disableFileSymlink: {
+    category: 'file',
+    mappingKey: 'createSymlink',
+    reverseValue: true,
+    overwriteIfExists: true,
+  },
+  disableErrorSymlink: {
+    category: 'error',
+    mappingKey: 'createSymlink',
+    reverseValue: true,
+    overwriteIfExists: true,
+  },
+  disableJSONSymlink: {
+    category: 'json',
+    mappingKey: 'createSymlink',
+    reverseValue: true,
+    overwriteIfExists: true,
+  },
+  maxSize: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'maxSize',
+  },
+  fileMaxSize: {
+    category: 'file',
+    mappingKey: 'maxSize',
+    overwriteIfExists: true,
+  },
+  errMaxSize: {
+    category: 'error',
+    mappingKey: 'maxSize',
+    overwriteIfExists: true,
+  },
+  jsonMaxSize: {
+    category: 'json',
+    mappingKey: 'maxSize',
+    overwriteIfExists: true,
+  },
+  maxFiles: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'maxFiles',
+  },
+  fileMaxFiles: {
+    category: 'file',
+    mappingKey: 'maxFiles',
+    overwriteIfExists: true,
+  },
+  errMaxFiles: {
+    category: 'error',
+    mappingKey: 'maxFiles',
+    overwriteIfExists: true,
+  },
+  jsonMaxFiles: {
+    category: 'json',
+    mappingKey: 'maxFiles',
+    overwriteIfExists: true,
+  },
+  jsonEol: {
+    category: 'json',
+    mappingKey: 'eol',
+  },
+  zippedArchive: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'zippedArchive',
+  },
+  fileZippedArchive: {
+    category: 'file',
+    mappingKey: 'zippedArchive',
+    overwriteIfExists: true,
+  },
+  errZippedArchive: {
+    category: 'error',
+    mappingKey: 'zippedArchive',
+    overwriteIfExists: true,
+  },
+  jsonZippedArchive: {
+    category: 'json',
+    mappingKey: 'zippedArchive',
+    overwriteIfExists: true,
+  },
+  datePattern: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'datePattern',
+  },
+  fileDatePattern: {
+    category: 'file',
+    mappingKey: 'datePattern',
+    overwriteIfExists: true,
+  },
+  errDatePattern: {
+    category: 'error',
+    mappingKey: 'datePattern',
+    overwriteIfExists: true,
+  },
+  jsonDatePattern: {
+    category: 'json',
+    mappingKey: 'datePattern',
+    overwriteIfExists: true,
+  },
+  auditFileDir: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'auditFileDir',
+  },
+  printFormat: {
+    category: 'top',
+    mappingKey: 'format',
+  },
+  defaultMeta: {
+    ignore: true,
+  },
+  defaultLabel: {
+    ignore: true,
+  },
+  disableConsole: {
+    ignore: true,
+  },
+  disableFile: {
+    ignore: true,
+  },
+  disableError: {
+    ignore: true,
+  },
+  fileOptions: {
+    category: ['file', 'error', 'json'],
+    mappingKey: 'fileOptions',
+  },
+};
+
 export function formatLegacyLoggerOptions(
-  unknownLoggerOptions: LoggerOptions | LegacyLoggerOptions
+  unknownLoggerOptions: LoggerOptions & LegacyLoggerOptions
 ): LoggerOptions {
-  const newOptionsKeys = [
-    'level',
-    'format',
-    'contextFormat',
-    'eol',
-    'transports',
-  ];
-  // 如果是旧的配置，需要转换成新的配置，判断是否有 level, format, contextFormat, eol, transports 之外的属性
-  if (
-    Object.keys(unknownLoggerOptions).some(key => !newOptionsKeys.includes(key))
+  function setTransportOptions(
+    newOptions: any,
+    optionsKey: string,
+    category: string,
+    overwriteIfExists = false
   ) {
-    const options = unknownLoggerOptions as LegacyLoggerOptions;
-    let consoleTransportOptions,
-      fileTransportOptions,
-      errTransportOptions,
-      jsonTransportOptions;
+    if (newOptions.transports[category]) {
+      const key = oldOptionsKeys[optionsKey].mappingKey ?? optionsKey;
+      // 启用了对应的 transport，才进行赋值，但是如果 transport 已经有值了，就不覆盖
+      if (overwriteIfExists) {
+        newOptions.transports[category][key] = unknownLoggerOptions[optionsKey];
+      } else {
+        newOptions.transports[category][key] =
+          newOptions.transports[category][key] ??
+          unknownLoggerOptions[optionsKey];
+      }
+    }
+  }
 
-    if (options.enableConsole !== false && options.disableConsole !== true) {
-      consoleTransportOptions = {
-        level: options.consoleLevel,
-      } as ConsoleTransportOptions;
+  // 如果包含任意一个老的配置，则需要转换成新的配置
+  if (Object.keys(unknownLoggerOptions).some(key => oldOptionsKeys[key])) {
+    const newOptions = { transports: {} } as LoggerOptions;
+    if (
+      unknownLoggerOptions['enableConsole'] !== false &&
+      unknownLoggerOptions['disableConsole'] !== true
+    ) {
+      newOptions.transports['console'] = {};
     }
 
-    if (options.enableFile !== false && options.disableFile !== true) {
-      fileTransportOptions = {
-        level: options.fileLevel,
-        dir: options.dir,
-        fileLogName: options.fileLogName,
-        createSymlink:
-          options.disableFileSymlink !== true ?? options.disableSymlink !== true,
-        maxSize: options.fileMaxSize ?? options.maxSize,
-        maxFiles: options.fileMaxFiles ?? options.maxFiles,
-        zippedArchive: options.fileZippedArchive ?? options.zippedArchive,
-        datePattern: options.fileDatePattern ?? options.datePattern,
-        auditFileDir: options.auditFileDir,
-        fileOptions: options.fileOptions,
-      } as FileTransportOptions;
+    if (
+      unknownLoggerOptions['enableFile'] !== false &&
+      unknownLoggerOptions['disableFile'] !== true
+    ) {
+      newOptions.transports['file'] = {};
     }
 
-    if (options.enableError !== false && options.disableError !== true) {
-      errTransportOptions = {
-        level: 'error',
-        dir: options.errorDir ?? options.dir,
-        fileLogName: options.errorLogName,
-        createSymlink:
-          options.disableErrorSymlink !== true ?? options.disableSymlink !== true,
-        maxSize: options.errMaxSize ?? options.maxSize,
-        maxFiles: options.errMaxFiles ?? options.maxFiles,
-        zippedArchive: options.errZippedArchive ?? options.zippedArchive,
-        datePattern: options.errDatePattern ?? options.datePattern,
-        auditFileDir: options.auditFileDir,
-        fileOptions: options.fileOptions,
-      } as FileTransportOptions;
+    if (
+      unknownLoggerOptions['enableError'] !== false &&
+      unknownLoggerOptions['disableError'] !== true
+    ) {
+      newOptions.transports['error'] = {};
     }
 
-    if (options.enableJSON) {
-      jsonTransportOptions = {
-        level: options.jsonLevel,
-        format: options.jsonFormat,
-        dir: options.jsonDir ?? options.dir,
-        fileLogName: options.jsonLogName,
-        createSymlink:
-          options.disableJSONSymlink !== true ?? options.disableSymlink,
-        maxSize: options.jsonMaxSize ?? options.maxSize,
-        maxFiles: options.jsonMaxFiles ?? options.maxFiles,
-        eol: options.jsonEol,
-        zippedArchive: options.jsonZippedArchive ?? options.zippedArchive,
-        datePattern: options.jsonDatePattern ?? options.datePattern,
-        auditFileDir: options.auditFileDir,
-        fileOptions: options.fileOptions,
-      } as FileTransportOptions;
+    if (unknownLoggerOptions['enableJSON']) {
+      newOptions.transports['json'] = {};
     }
 
-    return {
-      level: options.level ?? 'silly',
-      format: options.format,
-      contextFormat: options.contextFormat,
-      eol: options.eol,
-      transports: {
-        console:
-          consoleTransportOptions &&
-          new ConsoleTransport(consoleTransportOptions),
-        file: fileTransportOptions && new FileTransport(fileTransportOptions),
-        error: errTransportOptions && new FileTransport(errTransportOptions),
-        json: jsonTransportOptions && new FileTransport(jsonTransportOptions),
-      },
-    };
+    // 循环每个字段，如果是新的配置，直接赋值，如果是旧的配置，需要转换成新的配置
+    for (const key of Object.keys(unknownLoggerOptions)) {
+      // 设置值到 transport 的 options 上
+
+      if (!oldOptionsKeys[key]) {
+        // 新值直接覆盖，即使值存在
+        newOptions[key] = unknownLoggerOptions[key];
+      } else {
+        if (oldOptionsKeys[key].ignore) {
+          continue;
+        }
+
+        oldOptionsKeys[key].category = [].concat(oldOptionsKeys[key].category);
+
+        for (const category of oldOptionsKeys[key].category) {
+          if (category === 'all') {
+            // 赋值到所有启用的 transport
+            for (const categoryKey of Object.keys(newOptions.transports)) {
+              setTransportOptions(
+                newOptions,
+                key,
+                categoryKey,
+                oldOptionsKeys[key].overwriteIfExists
+              );
+            }
+          } else if (category === 'top') {
+            // 赋值到顶层
+            newOptions[key] =
+              newOptions[key] ??
+              unknownLoggerOptions[oldOptionsKeys[key].mappingKey];
+          } else {
+            setTransportOptions(
+              newOptions,
+              key,
+              category,
+              oldOptionsKeys[key].overwriteIfExists
+            );
+          }
+        }
+      }
+    }
+
+    return newOptions;
   }
 
   return unknownLoggerOptions as LoggerOptions;

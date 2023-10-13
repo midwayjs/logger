@@ -7,7 +7,7 @@ import {
 import { Logger } from './logger';
 import * as util from 'util';
 import { join } from 'path';
-import { isDevelopmentEnvironment } from './util';
+import { formatLegacyLoggerOptions, isDevelopmentEnvironment } from './util';
 const debug = util.debuglog('midway:debug');
 
 export class LoggerFactory extends Map<string, ILogger> {
@@ -21,7 +21,7 @@ export class LoggerFactory extends Map<string, ILogger> {
   ): ILogger {
     if (!this.has(name)) {
       debug('[logger]: Create logger "%s" with options %j', name, options);
-      const logger = new Logger(Object.assign(options, this.factoryOptions));
+      const logger = new Logger(formatLegacyLoggerOptions(Object.assign(options, this.factoryOptions)));
       this.addLogger(name, logger);
       return logger;
     }
@@ -91,15 +91,25 @@ export class LoggerFactory extends Map<string, ILogger> {
     return {
       midwayLogger: {
         default: {
-          dir: join(logRoot, 'logs', appInfo.name),
-          level: 'info',
-          consoleLevel: isDevelopment ? 'info' : 'warn',
-          auditFileDir: '.audit',
+          level: isDevelopment ? 'info' : 'warn',
+          transports: {
+            console: {
+              autoColor: isDevelopment,
+            },
+            file: {
+              dir: join(logRoot, 'logs', appInfo.name),
+              fileLogName: 'midway-core.log',
+              auditFileDir: '.audit',
+            },
+            error: {
+              dir: join(logRoot, 'logs', appInfo.name),
+              auditFileDir: '.audit',
+            },
+          },
         },
         clients: {
           coreLogger: {
             level: isDevelopment ? 'info' : 'warn',
-            fileLogName: 'midway-core.log',
           },
           appLogger: {
             fileLogName: 'midway-app.log',

@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`/test/legacy.test.ts should parse dir and errorDir 1`] = `
+{
+  "level": "info",
+  "transports": {
+    "console": {},
+    "error": {
+      "dir": "/Users/harry/project/logger/error",
+    },
+    "file": {
+      "dir": "/Users/harry/project/logger/test",
+    },
+  },
+}
+`;
+
+exports[`/test/legacy.test.ts should parse legacy options 1`] = `
+{
+  "level": "info",
+  "transports": {
+    "error": {
+      "dir": "/Users/harry/project/logger/test",
+      "fileLogName": "test.log",
+    },
+    "file": {
+      "dir": "/Users/harry/project/logger/test",
+      "fileLogName": "test.log",
+    },
+  },
+}
+`;
+
+exports[`/test/legacy.test.ts should test new and old options mixin 1`] = `
+{
+  "level": "info",
+  "transports": {
+    "console": {
+      "eol": "
+",
+      "level": "warn",
+    },
+  },
+}
+`;

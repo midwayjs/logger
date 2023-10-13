@@ -34,6 +34,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
 {
   protected loggerOptions: LoggerOptions;
   protected LEVEL: string;
+  protected readonly pid = process.pid;
 
   constructor(
     protected readonly options: TransportOptions = {} as TransportOptions
@@ -87,7 +88,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     const info = {
       level: levelString,
       timestamp: Date.now(),
-      pid: process.pid,
+      pid: this.pid,
     };
 
     Object.defineProperties(info, {
@@ -118,6 +119,12 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
       ctx: {
         get() {
           return meta.ctx;
+        },
+        enumerable: false,
+      },
+      originError: {
+        get() {
+          return args.find(arg => arg instanceof Error);
         },
         enumerable: false,
       },
