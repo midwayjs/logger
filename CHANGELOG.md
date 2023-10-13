@@ -1,4 +1,15 @@
 
+3.0.0-beta.15 / 2023-10-14
+==========================
+
+  * test: fix enable color case
+  * test: fix enable color case
+  * fix: lint
+  * chore: update default logger
+  * feat: support legacy options
+  * feat: support 1.x options
+  * chore: sync 2.18 changelog
+
 3.0.0-beta.14 / 2023-10-05
 =========================
 
