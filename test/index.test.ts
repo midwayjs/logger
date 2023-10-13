@@ -23,6 +23,7 @@ import {
 } from './util';
 import * as os from 'os';
 import { readdirSync, readFileSync, writeFileSync } from 'fs';
+import { supportsColor } from '../src/util/color';
 
 describe('/test/index.test.ts', () => {
   afterEach(() => {
@@ -906,6 +907,7 @@ describe('/test/index.test.ts', () => {
 
   it('should test color with console', function () {
     clearAllLoggers();
+    process.env.FORCE_ENABLE_COLOR = 'true';
     const fnStdout = jest.spyOn(process.stdout, 'write');
     const fnStderr = jest.spyOn(process.stderr, 'write');
     const consoleLogger = createConsoleLogger('consoleLogger', {
@@ -917,6 +919,29 @@ describe('/test/index.test.ts', () => {
     consoleLogger.error('test', 'test1', 'test2', 'test3');
     expect(fnStdout.mock.calls[0][0]).toContain('\x1B');
     expect(fnStderr.mock.calls[0][0]).toContain('\x1B');
+    process.env.FORCE_ENABLE_COLOR = undefined;
+  });
+
+  it('should test auto color with console', function () {
+    clearAllLoggers();
+    const fnStdout = jest.spyOn(process.stdout, 'write');
+    const fnStderr = jest.spyOn(process.stderr, 'write');
+    const consoleLogger = createConsoleLogger('consoleLogger', {
+      autoColors: true,
+    });
+    consoleLogger.debug('test', 'test1', 'test2', 'test3');
+    consoleLogger.info('test', 'test1', 'test2', 'test3');
+    consoleLogger.warn('test', 'test1', 'test2', 'test3');
+    consoleLogger.error('test', 'test1', 'test2', 'test3');
+
+    const isTerminalSupportColor = supportsColor.stdout;
+    if (isTerminalSupportColor) {
+      expect(fnStdout.mock.calls[0][0]).toContain('\x1B');
+      expect(fnStderr.mock.calls[0][0]).toContain('\x1B');
+    } else {
+      expect(fnStdout.mock.calls[0][0]).not.toContain('\x1B');
+      expect(fnStderr.mock.calls[0][0]).not.toContain('\x1B');
+    }
   });
 
   it('should test no color with console', function () {

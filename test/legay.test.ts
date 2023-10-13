@@ -3,34 +3,78 @@ import { join } from 'path';
 
 describe('/test/legacy.test.ts', () => {
   it('should parse legacy options', () => {
-    expect(formatLegacyLoggerOptions({
-      level: 'info',
-      dir: __dirname,
-      fileLogName: 'test.log',
-      enableFile: true,
-      disableJSONSymlink: true,
-      disableConsole: true,
-    })).toMatchSnapshot();
+    expect(
+      formatLegacyLoggerOptions({
+        level: 'info',
+        dir: __dirname,
+        fileLogName: 'test.log',
+        enableFile: true,
+        disableJSONSymlink: true,
+        disableConsole: true,
+      })
+    ).toMatchInlineSnapshot(`
+      {
+        "level": "info",
+        "transports": {
+          "error": {
+            "dir": "${__dirname}",
+            "fileLogName": "test.log",
+          },
+          "file": {
+            "dir": "/Users/harry/project/logger/test",
+            "fileLogName": "test.log",
+          },
+        },
+      }
+    `);
   });
 
   it('should parse dir and errorDir', () => {
-    expect(formatLegacyLoggerOptions({
-      level: 'info',
-      dir: __dirname,
-      errorDir: join(__dirname, '../error'),
-    })).toMatchSnapshot();
+    expect(
+      formatLegacyLoggerOptions({
+        level: 'info',
+        dir: __dirname,
+        errorDir: join(__dirname, '../error'),
+      })
+    ).toMatchInlineSnapshot(`
+      {
+        "level": "info",
+        "transports": {
+          "console": {},
+          "error": {
+            "dir": "${join(__dirname, '../error')}",
+          },
+          "file": {
+            "dir": "${__dirname}",
+          },
+        },
+      }
+    `);
   });
 
   it('should test new and old options mixin', () => {
-    expect(formatLegacyLoggerOptions({
-      level: 'info',
-      transports: {
-        console: {
-          level: 'warn',
-          eol: '\n',
-        }
-      },
-      consoleLevel: 'error',
-    })).toMatchSnapshot();
+    expect(
+      formatLegacyLoggerOptions({
+        level: 'info',
+        transports: {
+          console: {
+            level: 'warn',
+            eol: '\n',
+          },
+        },
+        consoleLevel: 'error',
+      })
+    ).toMatchInlineSnapshot(`
+      {
+        "level": "info",
+        "transports": {
+          "console": {
+            "eol": "
+      ",
+            "level": "warn",
+          },
+        },
+      }
+    `);
   });
 });

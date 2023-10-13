@@ -20,7 +20,10 @@ export class ConsoleTransport
     }
     let msg = this.format(level, meta, args) as string;
 
-    if (this.options.autoColors && isTerminalSupportColor) {
+    if (
+      process.env.FORCE_ENABLE_COLOR ||
+      (this.options.autoColors && isTerminalSupportColor)
+    ) {
       const color = this.getColor(level);
       msg = colorizeAll(msg, color);
     }
