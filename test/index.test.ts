@@ -919,7 +919,7 @@ describe('/test/index.test.ts', () => {
     consoleLogger.error('test', 'test1', 'test2', 'test3');
     expect(fnStdout.mock.calls[0][0]).toContain('\x1B');
     expect(fnStderr.mock.calls[0][0]).toContain('\x1B');
-    process.env.FORCE_ENABLE_COLOR = undefined;
+    process.env.FORCE_ENABLE_COLOR = '';
   });
 
   it('should test auto color with console', function () {

@@ -21,7 +21,7 @@ describe('/test/legacy.test.ts', () => {
             "fileLogName": "test.log",
           },
           "file": {
-            "dir": "/Users/harry/project/logger/test",
+            "dir": "${__dirname}",
             "fileLogName": "test.log",
           },
         },
