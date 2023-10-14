@@ -1,4 +1,4 @@
-import { ConsoleTransport, FileTransport, Logger } from '../../src';
+import { ConsoleTransport, FileTransport, MidwayLogger } from '../../src';
 import { join } from 'path';
 import * as cluster from 'cluster';
 
@@ -17,7 +17,7 @@ if (cluster['isMaster']) {
     console.log(`worker ${worker.process.pid} died`);
   });
 } else {
-  const logger = new Logger({
+  const logger = new MidwayLogger({
     transports: {
       console: new ConsoleTransport(),
       file: new FileTransport({

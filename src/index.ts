@@ -5,13 +5,14 @@ import {
   ILogger,
   LoggerOptions,
 } from './interface';
-import { Logger } from './logger';
+import { MidwayLogger } from './logger';
 
 export * from './interface';
 export * from './logger';
 export * from './transport/transport';
 export * from './transport/file';
 export * from './transport/console';
+export * from './factory';
 
 export const loggers = new LoggerFactory();
 export const clearAllLoggers = () => {
@@ -51,4 +52,12 @@ export const createConsoleLogger = (
 /**
  * @deprecated
  */
-export type IMidwayLogger = Logger;
+export type IMidwayLogger = MidwayLogger;
+/**
+ * @deprecated
+ */
+export const MidwayLoggerContainer = LoggerFactory;
+/**
+ * @deprecated
+ */
+export const MidwayBaseLogger = MidwayLogger;

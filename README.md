@@ -36,12 +36,13 @@ const logger = loggers.createLogger('logger', {
 })
 ```
 
-Create console logger(just disable file and error transports)
+Create console logger.
 
 ```typescript
 const logger = loggers.createLogger('consoleLogger', {
-  enableFile: false,
-  enableError: false,
+  transports: {
+    console: new ConsoleTransport(),
+  }
 })
 ```
 

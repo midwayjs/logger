@@ -19,7 +19,7 @@ TransportManager.set('file', FileTransport);
 TransportManager.set('error', ErrorTransport);
 TransportManager.set('json', JSONTransport);
 
-export class Logger implements ILogger {
+export class MidwayLogger implements ILogger {
   private transports: Map<string, ITransport> = new Map();
   private closeHandlers: Array<() => void> = [];
   protected options: LoggerOptions;
@@ -132,7 +132,7 @@ export class Logger implements ILogger {
   }
 
   createContextLogger(ctx: any) {
-    return new ContextLogger(ctx, this);
+    return new MidwayContextLogger(ctx, this);
   }
 
   transit(level: LoggerLevel | false, meta: LogMeta = {}, ...args) {
@@ -148,10 +148,10 @@ export class Logger implements ILogger {
   }
 }
 
-export class ContextLogger<CTX> implements ILogger {
+export class MidwayContextLogger<CTX> implements ILogger {
   constructor(
     protected readonly ctx: CTX,
-    protected readonly parentLogger: Logger
+    protected readonly parentLogger: MidwayLogger
   ) {}
 
   debug(...args) {

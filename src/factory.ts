@@ -4,7 +4,7 @@ import {
   LoggerFactoryOptions,
   LoggerOptions,
 } from './interface';
-import { Logger } from './logger';
+import { MidwayLogger } from './logger';
 import * as util from 'util';
 import { join } from 'path';
 import { formatLegacyLoggerOptions, isDevelopmentEnvironment } from './util';
@@ -21,7 +21,7 @@ export class LoggerFactory extends Map<string, ILogger> {
   ): ILogger {
     if (!this.has(name)) {
       debug('[logger]: Create logger "%s" with options %j', name, options);
-      const logger = new Logger(
+      const logger = new MidwayLogger(
         formatLegacyLoggerOptions(Object.assign(options, this.factoryOptions))
       );
       this.addLogger(name, logger);
@@ -43,7 +43,7 @@ export class LoggerFactory extends Map<string, ILogger> {
         if (logger['on']) {
           (logger as any).on('close', () => this.delete(name));
         }
-        this.set(name, logger as Logger);
+        this.set(name, logger as MidwayLogger);
       }
     } else {
       throw new Error(`logger id ${name} has duplicate`);
@@ -123,6 +123,6 @@ export class LoggerFactory extends Map<string, ILogger> {
   }
 
   createContextLogger(ctx: any, appLogger: ILogger): ILogger {
-    return (appLogger as Logger).createContextLogger(ctx);
+    return (appLogger as MidwayLogger).createContextLogger(ctx);
   }
 }

@@ -1,5 +1,5 @@
 import {
-  Logger,
+  MidwayLogger,
   ConsoleTransport,
   FileTransport,
   createConsoleLogger,
@@ -32,7 +32,7 @@ describe('/test/index.test.ts', () => {
   });
 
   it('should output with console transport', () => {
-    const logger = new Logger();
+    const logger = new MidwayLogger();
     logger.add('console', new ConsoleTransport());
 
     const fnStdout = jest.spyOn(process.stdout, 'write');
@@ -104,7 +104,7 @@ describe('/test/index.test.ts', () => {
   it('should test create logger with file transport', async () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
-    const coreLogger = new Logger({
+    const coreLogger = new MidwayLogger({
       transports: {
         console: new ConsoleTransport(),
         file: new FileTransport({
@@ -242,7 +242,7 @@ describe('/test/index.test.ts', () => {
   it('should create custom logger and output content', async () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
-    const logger = new Logger({
+    const logger = new MidwayLogger({
       transports: {
         console: new ConsoleTransport(),
         file: new FileTransport({
@@ -412,7 +412,7 @@ describe('/test/index.test.ts', () => {
     clearAllLoggers();
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
-    const logger = createLogger<Logger>('testLogger', {
+    const logger = createLogger<MidwayLogger>('testLogger', {
       transports: {
         console: new ConsoleTransport(),
       }
@@ -474,7 +474,7 @@ describe('/test/index.test.ts', () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
     const timeFormat = getCurrentDateString();
-    const logger = createLogger<Logger>('testLogger', {
+    const logger = createLogger<MidwayLogger>('testLogger', {
       format: (info) => {
         return `${info.level.toUpperCase()} ${process.pid} ${info.args}`;
       },
@@ -538,7 +538,7 @@ describe('/test/index.test.ts', () => {
     }
     const originLogger: any = createConsoleLogger('consoleLogger');
     expect(loggers.size).toEqual(1);
-    const logger = new Logger();
+    const logger = new MidwayLogger();
     // 重复添加会报错
     expect(() => {
       loggers.addLogger('consoleLogger', logger);

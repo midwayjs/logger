@@ -1,4 +1,4 @@
-import { clearAllLoggers, createLogger, IMidwayLogger, FileTransport, ContextLogger, ConsoleTransport } from '../src';
+import { clearAllLoggers, createLogger, IMidwayLogger, FileTransport, MidwayContextLogger, ConsoleTransport } from '../src';
 import { join } from 'path';
 import { matchContentTimes, removeFileOrDir, sleep } from './util';
 
@@ -25,7 +25,7 @@ describe('/test/contextLogger.test.ts', function () {
     });
 
     const ctx = { data: 'custom data' };
-    const contextLogger = new ContextLogger(ctx, logger);
+    const contextLogger = new MidwayContextLogger(ctx, logger);
 
     contextLogger.info('hello world');
     contextLogger.debug('hello world');

@@ -1,12 +1,12 @@
 import { join } from 'path';
 import { fileExists, includeContent, removeFileOrDir, sleep } from './util';
-import { ConsoleTransport, FileTransport, Logger } from '../src';
+import { ConsoleTransport, FileTransport, MidwayLogger } from '../src';
 
 describe('test/file.test.ts', function () {
   it('should test file logger with buffer', async () => {
     const logsDir = join(__dirname, 'logs');
     await removeFileOrDir(logsDir);
-    const logger = new Logger({
+    const logger = new MidwayLogger({
       transports: {
         console: new ConsoleTransport(),
         file: new FileTransport({
