@@ -78,7 +78,7 @@ export class MidwayLogger implements ILogger {
 
   add(
     name: string,
-    transport: ITransport | Record<string, BaseTransportOptions>
+    transport: ITransport | Record<string, BaseTransportOptions> | false
   ) {
     if (transport) {
       let transportInstance: ITransport;
