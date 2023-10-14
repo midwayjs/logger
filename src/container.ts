@@ -6,6 +6,8 @@ import {
 } from './interface';
 import { MidwayBaseLogger } from './logger/logger';
 import * as util from 'util';
+import { join } from 'path';
+import { isDevelopmentEnvironment } from './util';
 
 const debug = util.debuglog('midway:debug');
 /**
@@ -206,5 +208,39 @@ export class MidwayLoggerContainer extends Map<string, ILogger> {
     });
     this.loggerOriginData = {};
     this.containerLoggerData = {};
+  }
+
+  getDefaultMidwayLoggerConfig(appInfo: {
+    pkg: Record<string, any>;
+    name: string;
+    baseDir: string;
+    appDir: string;
+    HOME: string;
+    root: string;
+    env: string;
+  }) {
+    const isDevelopment = isDevelopmentEnvironment(appInfo.env);
+    const logRoot = process.env['MIDWAY_LOGGER_WRITEABLE_DIR'] ?? appInfo.root;
+
+    return {
+      midwayLogger: {
+        default: {
+          dir: join(logRoot, 'logs', appInfo.name),
+          level: 'info',
+          consoleLevel: isDevelopment ? 'info' : 'warn',
+          auditFileDir: '.audit',
+        },
+        clients: {
+          coreLogger: {
+            level: isDevelopment ? 'info' : 'warn',
+            fileLogName: 'midway-core.log',
+          },
+          appLogger: {
+            fileLogName: 'midway-app.log',
+            aliasName: 'logger',
+          },
+        },
+      },
+    };
   }
 }
