@@ -1,4 +1,26 @@
 
+3.0.0-beta.16 / 2023-10-14
+==========================
+
+  * chore: use options replace transport instance
+  * chore(deps): update dependency fs-extra to v11 (#81)
+  * chore(deps): update actions/checkout action to v4 (#97)
+  * Release 3.0.0-beta.15
+  * test: fix enable color case
+  * test: fix enable color case
+  * fix: lint
+  * chore: update default logger
+  * feat: support legacy options
+  * feat: support 1.x options
+  * chore: sync 2.18 changelog
+  * Release 3.0.0-beta.14
+  * Release 3.0.0-beta.1
+  * test: add buffer write case
+  * test: add reset
+  * chore: lint
+  * feat: code for v3
+  * chore: tmp code
+
 3.0.0-beta.15 / 2023-10-14
 ==========================
 
@@ -10,6 +32,11 @@
   * feat: support 1.x options
   * chore: sync 2.18 changelog
 
+2.19.0 / 2023-10-14
+===================
+
+* feat: support logger v3 and add default midway logger config (#98)
+
 3.0.0-beta.14 / 2023-10-05
 =========================
 
@@ -18,7 +45,6 @@
   * chore: lint
   * feat: code for v3
   * chore: tmp code
-
 
 2.18.0 / 2023-09-11
 ===================
