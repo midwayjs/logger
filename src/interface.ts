@@ -45,6 +45,13 @@ export interface LoggerOptions {
   transports?: Record<string, ITransport | Record<string, any>>;
 }
 
+export interface ContextLoggerOptions {
+  /**
+   * Output format for context logger
+   */
+  contextFormat?: LoggerFormat;
+}
+
 export interface ITransport {
   level: LoggerLevel;
   setLoggerOptions(options: LoggerOptions): void;
@@ -74,6 +81,7 @@ export interface BaseTransportOptions {
 
 export interface LogMeta {
   ctx?: any;
+  contextFormat?: LoggerFormat;
 }
 
 export interface ConsoleTransportOptions extends BaseTransportOptions {

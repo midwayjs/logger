@@ -57,8 +57,12 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
   ): string | Record<string, any> | Buffer {
     const info = this.getLoggerInfo(level, meta, args);
 
-    if (meta.ctx && this.options.contextFormat) {
-      return this.options.contextFormat(info);
+    if (meta.ctx) {
+      if (meta.contextFormat) {
+        return meta.contextFormat(info);
+      } else if (this.options.contextFormat) {
+        return this.options.contextFormat(info);
+      }
     }
     if (this.options.format) {
       return this.options.format(info);

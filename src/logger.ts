@@ -1,5 +1,6 @@
 import {
   BaseTransportOptions,
+  ContextLoggerOptions,
   ILogger,
   ITransport,
   LoggerLevel,
@@ -151,7 +152,8 @@ export class MidwayLogger implements ILogger {
 export class MidwayContextLogger<CTX> implements ILogger {
   constructor(
     protected readonly ctx: CTX,
-    protected readonly parentLogger: MidwayLogger
+    protected readonly parentLogger: MidwayLogger,
+    protected readonly options: ContextLoggerOptions = {}
   ) {}
 
   debug(...args) {
@@ -159,6 +161,7 @@ export class MidwayContextLogger<CTX> implements ILogger {
       'debug',
       {
         ctx: this.ctx,
+        contextFormat: this.options.contextFormat,
       },
       ...args
     );
