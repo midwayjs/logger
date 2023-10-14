@@ -92,3 +92,7 @@ export function assertConditionTruthy(...args): boolean {
   }
   return true;
 }
+
+export const isDevelopmentEnvironment = env => {
+  return ['local', 'test', 'unittest'].includes(env);
+};
