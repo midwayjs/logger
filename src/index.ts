@@ -1,6 +1,4 @@
 import { LoggerFactory } from './factory';
-import { ConsoleTransport } from './transport/console';
-import { FileTransport } from './transport/file';
 import {
   ConsoleTransportOptions,
   FileTransportOptions,
@@ -31,11 +29,11 @@ export const createFileLogger = (
 ) => {
   return loggers.createLogger(name, {
     transports: {
-      file: new FileTransport({
+      file: {
         dir: __dirname,
         fileLogName: 'custom-logger.log',
         ...options,
-      }),
+      },
     },
   });
 };
@@ -45,7 +43,7 @@ export const createConsoleLogger = (
 ) => {
   return loggers.createLogger(name, {
     transports: {
-      console: new ConsoleTransport(options),
+      console: options,
     },
   });
 };
