@@ -411,46 +411,23 @@ export function formatLegacyLoggerOptions(
     category: string,
     overwriteIfExists = false
   ) {
-    if (newOptions.transports[category]) {
-      const key = oldOptionsKeys[optionsKey].mappingKey ?? optionsKey;
-      // 启用了对应的 transport，才进行赋值，但是如果 transport 已经有值了，就不覆盖
-      if (overwriteIfExists) {
-        newOptions.transports[category][key] = unknownLoggerOptions[optionsKey];
-      } else {
-        newOptions.transports[category][key] =
-          newOptions.transports[category][key] ??
-          unknownLoggerOptions[optionsKey];
-      }
+    if (!newOptions.transports[category]) {
+      newOptions.transports[category] = {};
+    }
+    const key = oldOptionsKeys[optionsKey].mappingKey ?? optionsKey;
+    // 启用了对应的 transport，才进行赋值，但是如果 transport 已经有值了，就不覆盖
+    if (overwriteIfExists) {
+      newOptions.transports[category][key] = unknownLoggerOptions[optionsKey];
+    } else {
+      newOptions.transports[category][key] =
+        newOptions.transports[category][key] ??
+        unknownLoggerOptions[optionsKey];
     }
   }
 
   // 如果包含任意一个老的配置，则需要转换成新的配置
   if (Object.keys(unknownLoggerOptions).some(key => oldOptionsKeys[key])) {
     const newOptions = { transports: {} } as LoggerOptions;
-    if (
-      unknownLoggerOptions['enableConsole'] !== false &&
-      unknownLoggerOptions['disableConsole'] !== true
-    ) {
-      newOptions.transports['console'] = {};
-    }
-
-    if (
-      unknownLoggerOptions['enableFile'] !== false &&
-      unknownLoggerOptions['disableFile'] !== true
-    ) {
-      newOptions.transports['file'] = {};
-    }
-
-    if (
-      unknownLoggerOptions['enableError'] !== false &&
-      unknownLoggerOptions['disableError'] !== true
-    ) {
-      newOptions.transports['error'] = {};
-    }
-
-    if (unknownLoggerOptions['enableJSON']) {
-      newOptions.transports['json'] = {};
-    }
 
     // 循环每个字段，如果是新的配置，直接赋值，如果是旧的配置，需要转换成新的配置
     for (const key of Object.keys(unknownLoggerOptions)) {
@@ -492,6 +469,38 @@ export function formatLegacyLoggerOptions(
           }
         }
       }
+    }
+
+    if (
+      newOptions.transports['console'] &&
+      (unknownLoggerOptions['enableConsole'] === false ||
+        unknownLoggerOptions['disableConsole'] === true)
+    ) {
+      newOptions.transports['console'] = false;
+    }
+
+    if (
+      newOptions.transports['file'] &&
+      (unknownLoggerOptions['enableFile'] === false ||
+        unknownLoggerOptions['disableFile'] === true)
+    ) {
+      newOptions.transports['file'] = false;
+    }
+
+    if (
+      newOptions.transports['error'] &&
+      (unknownLoggerOptions['enableError'] === false ||
+        unknownLoggerOptions['disableError'] === true)
+    ) {
+      newOptions.transports['error'] = false;
+    }
+
+    if (
+      newOptions.transports['json'] &&
+      (unknownLoggerOptions['enableJSON'] === undefined ||
+        unknownLoggerOptions['enableJSON'] === false)
+    ) {
+      newOptions.transports['json'] = false;
     }
 
     return newOptions;

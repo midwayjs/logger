@@ -24,6 +24,7 @@ describe('/test/legacy.test.ts', () => {
             "dir": "${__dirname}",
             "fileLogName": "test.log",
           },
+          "json": false,
         },
       }
     `);
@@ -40,13 +41,13 @@ describe('/test/legacy.test.ts', () => {
       {
         "level": "info",
         "transports": {
-          "console": {},
           "error": {
             "dir": "${join(__dirname, '../error')}",
           },
           "file": {
             "dir": "${__dirname}",
           },
+          "json": false,
         },
       }
     `);
@@ -73,6 +74,28 @@ describe('/test/legacy.test.ts', () => {
       ",
             "level": "warn",
           },
+        },
+      }
+    `);
+  });
+
+  it('should test transport disabled and transport mix', () => {
+    expect(
+      formatLegacyLoggerOptions({
+        level: 'info',
+        transports: {
+          console: {
+            autoColors: true,
+          },
+        },
+        consoleLevel: 'error',
+        disableConsole: true,
+      })
+    ).toMatchInlineSnapshot(`
+      {
+        "level": "info",
+        "transports": {
+          "console": false,
         },
       }
     `);

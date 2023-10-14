@@ -96,7 +96,7 @@ export class LoggerFactory extends Map<string, ILogger> {
           level: isDevelopment ? 'info' : 'warn',
           transports: {
             console: {
-              autoColor: isDevelopment,
+              autoColors: isDevelopment,
             },
             file: {
               dir: join(logRoot, 'logs', appInfo.name),
