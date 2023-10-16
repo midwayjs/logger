@@ -9,3 +9,15 @@ export const DefaultLogLevels = {
   silly: 7,
   all: 8,
 };
+
+export const LEVEL = {
+  none: 'NONE',
+  error: 'ERROR',
+  trace: 'TRACE',
+  warn: 'WARN',
+  info: 'INFO',
+  verbose: 'VERBOSE',
+  debug: 'DEBUG',
+  silly: 'SILLY',
+  all: 'ALL',
+};

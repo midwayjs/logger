@@ -8,6 +8,7 @@ import {
   LogMeta,
 } from '../interface';
 import { getFormatDate } from '../util';
+import { LEVEL } from '../constants';
 
 // export abstract class Transport extends Transform {
 //   constructor() {
@@ -33,7 +34,6 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
   implements ITransport
 {
   protected loggerOptions: LoggerOptions;
-  protected LEVEL: string;
   protected readonly pid = process.pid;
 
   constructor(
@@ -47,16 +47,25 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     this.options.contextFormat =
       this.options.contextFormat || options.contextFormat;
     this.options.eol = this.options.eol || options.eol;
-    this.LEVEL = this.options.level.toUpperCase();
   }
 
   format(
-    level: LoggerLevel,
+    level: LoggerLevel | false,
     meta: LogMeta,
     args: any[]
   ): string | Record<string, any> | Buffer {
     const info = this.getLoggerInfo(level, meta, args);
+    // support buffer
+    if (Buffer.isBuffer(info.args[0])) {
+      return info.args[0];
+    }
 
+    // for write and ignore format
+    if (level === false) {
+      return format(info.message);
+    }
+
+    // for context logger
     if (meta.ctx) {
       if (meta.contextFormat) {
         return meta.contextFormat(info);
@@ -66,10 +75,6 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     }
     if (this.options.format) {
       return this.options.format(info);
-    }
-
-    if (Buffer.isBuffer(info.args[0])) {
-      return info.args[0];
     }
 
     if (level) {
@@ -85,9 +90,11 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     }
   }
 
-  getLoggerInfo(level: LoggerLevel, meta: LogMeta, args: any[]): LoggerInfo {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
+  getLoggerInfo(
+    level: LoggerLevel | false,
+    meta: LogMeta,
+    args: any[]
+  ): LoggerInfo {
     const levelString = level || '';
     const info = {
       level: levelString,
@@ -98,7 +105,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     Object.defineProperties(info, {
       LEVEL: {
         get() {
-          return self.LEVEL;
+          return LEVEL[levelString] || '';
         },
         enumerable: false,
       },
@@ -143,7 +150,6 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
 
   set level(level: LoggerLevel) {
     this.options.level = level;
-    this.LEVEL = level.toUpperCase();
   }
 
   abstract log(level: LoggerLevel | false, meta: LogMeta, ...args: any[]): void;

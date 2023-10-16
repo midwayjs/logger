@@ -14,7 +14,7 @@ export class ConsoleTransport
   extends Transport<ConsoleTransportOptions>
   implements ITransport
 {
-  log(level: LoggerLevel, meta: LogMeta, ...args) {
+  log(level: LoggerLevel | false, meta: LogMeta, ...args) {
     if (!isEnableLevel(level, this.options.level)) {
       return;
     }
@@ -36,7 +36,7 @@ export class ConsoleTransport
     }
   }
 
-  getColor(level: LoggerLevel) {
+  getColor(level: LoggerLevel | false) {
     switch (level) {
       case 'debug':
         return Color.blue;

@@ -1,13 +1,8 @@
-import {
-  ILogger,
-  LegacyLoggerOptions,
-  LoggerFactoryOptions,
-  LoggerOptions,
-} from './interface';
+import { ILogger, LoggerFactoryOptions, LoggerOptions } from './interface';
 import { MidwayLogger } from './logger';
 import * as util from 'util';
 import { join } from 'path';
-import { formatLegacyLoggerOptions, isDevelopmentEnvironment } from './util';
+import { isDevelopmentEnvironment } from './util';
 const debug = util.debuglog('midway:debug');
 
 export class LoggerFactory extends Map<string, ILogger> {
@@ -15,14 +10,11 @@ export class LoggerFactory extends Map<string, ILogger> {
     super();
   }
 
-  createLogger(
-    name: string,
-    options: LoggerOptions | LegacyLoggerOptions
-  ): ILogger {
+  createLogger(name: string, options: LoggerOptions): ILogger {
     if (!this.has(name)) {
       debug('[logger]: Create logger "%s" with options %j', name, options);
       const logger = new MidwayLogger(
-        formatLegacyLoggerOptions(Object.assign(options, this.factoryOptions))
+        Object.assign(options, this.factoryOptions)
       );
       this.addLogger(name, logger);
       return logger;
@@ -113,10 +105,13 @@ export class LoggerFactory extends Map<string, ILogger> {
         clients: {
           coreLogger: {
             level: isDevelopment ? 'info' : 'warn',
+            transports: {
+              file: {
+                fileLogName: 'midway-core.log',
+              },
+            },
           },
-          appLogger: {
-            fileLogName: 'midway-app.log',
-          },
+          appLogger: {},
         },
       },
     };
