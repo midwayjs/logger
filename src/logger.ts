@@ -133,8 +133,8 @@ export class MidwayLogger implements ILogger {
     this.closeHandlers.push(closeHandler);
   }
 
-  createContextLogger(ctx: any) {
-    return new MidwayContextLogger(ctx, this);
+  createContextLogger(ctx: any, options: ContextLoggerOptions = {}) {
+    return new MidwayContextLogger(ctx, this, options);
   }
 
   transit(level: LoggerLevel | false, meta: LogMeta = {}, ...args) {
@@ -158,61 +158,35 @@ export class MidwayContextLogger<CTX> implements ILogger {
   ) {}
 
   debug(...args) {
-    this.parentLogger.transit(
-      'debug',
-      {
-        ctx: this.ctx,
-        contextFormat: this.options.contextFormat,
-      },
-      ...args
-    );
+    this.transit('debug', ...args);
   }
 
   info(...args) {
-    this.parentLogger.transit(
-      'info',
-      {
-        ctx: this.ctx,
-      },
-      ...args
-    );
+    this.transit('info', ...args);
   }
 
   warn(...args) {
-    this.parentLogger.transit(
-      'warn',
-      {
-        ctx: this.ctx,
-      },
-      ...args
-    );
+    this.transit('warn', ...args);
   }
 
   error(...args) {
-    this.parentLogger.transit(
-      'error',
-      {
-        ctx: this.ctx,
-      },
-      ...args
-    );
+    this.transit('error', ...args);
   }
 
   verbose(...args: any[]): void {
-    this.parentLogger.transit(
-      'verbose',
-      {
-        ctx: this.ctx,
-      },
-      ...args
-    );
+    this.transit('verbose', ...args);
   }
 
   write(...args: any[]): void {
+    this.transit(false, ...args);
+  }
+
+  transit(level: LoggerLevel | false, ...args) {
     this.parentLogger.transit(
-      false,
+      level,
       {
         ctx: this.ctx,
+        contextFormat: this.options.contextFormat,
       },
       ...args
     );

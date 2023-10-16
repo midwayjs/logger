@@ -98,11 +98,16 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     const levelString = level || '';
     const info = {
       level: levelString,
-      timestamp: Date.now(),
       pid: this.pid,
     };
 
     Object.defineProperties(info, {
+      timestamp: {
+        get() {
+          return getFormatDate(Date.now(), 'YYYY-MM-DD HH:mm:ss.SSS');
+        },
+        enumerable: false,
+      },
       LEVEL: {
         get() {
           return LEVEL[levelString] || '';

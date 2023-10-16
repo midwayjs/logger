@@ -1,4 +1,9 @@
-import { ILogger, LoggerFactoryOptions, LoggerOptions } from './interface';
+import {
+  ContextLoggerOptions,
+  ILogger,
+  LoggerFactoryOptions,
+  LoggerOptions,
+} from './interface';
 import { MidwayLogger } from './logger';
 import * as util from 'util';
 import { join } from 'path';
@@ -117,7 +122,11 @@ export class LoggerFactory extends Map<string, ILogger> {
     };
   }
 
-  createContextLogger(ctx: any, appLogger: ILogger): ILogger {
-    return (appLogger as MidwayLogger).createContextLogger(ctx);
+  createContextLogger(
+    ctx: any,
+    appLogger: ILogger,
+    options: ContextLoggerOptions = {}
+  ): ILogger {
+    return (appLogger as MidwayLogger).createContextLogger(ctx, options);
   }
 }
