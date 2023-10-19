@@ -330,7 +330,7 @@ const legacyOptionsKeys: {
     ignore: true,
   },
   fileLogName: {
-    category: ['file', 'error', 'json'],
+    category: ['file'],
     mappingKey: 'fileLogName',
   },
   errorLogName: {

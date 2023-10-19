@@ -59,7 +59,9 @@ describe('/test/legacy.test.ts', () => {
     expect(
       formatLegacyLoggerOptions({
         level: 'info',
-        format: (info) => {return 'ok'},
+        format: info => {
+          return 'ok';
+        },
         consoleLevel: 'debug',
         dir: '/abc',
         fileLogName: 'test.log',
@@ -77,7 +79,6 @@ describe('/test/legacy.test.ts', () => {
           },
           "error": {
             "dir": "/abc/error",
-            "fileLogName": "test.log",
           },
           "file": {
             "dir": "/abc",
@@ -87,6 +88,32 @@ describe('/test/legacy.test.ts', () => {
             "dir": "/abc",
             "fileLogName": "test.json",
           },
+        },
+      }
+    `);
+  });
+
+  it('should teest parse error log name', () => {
+    expect(
+      formatLegacyLoggerOptions({
+        dir: '/mock-production-app/logs',
+        fileLogName: 'middleware.log',
+        auditFileDir: '/mock-production-app/logs/ali-demo/.audit',
+        errorDir: '/mock-production-app/logs/ali-demo',
+      })
+    ).toMatchInlineSnapshot(`
+      {
+        "transports": {
+          "error": {
+            "auditFileDir": "/mock-production-app/logs/ali-demo/.audit",
+            "dir": "/mock-production-app/logs/ali-demo",
+          },
+          "file": {
+            "auditFileDir": "/mock-production-app/logs/ali-demo/.audit",
+            "dir": "/mock-production-app/logs",
+            "fileLogName": "middleware.log",
+          },
+          "json": false,
         },
       }
     `);
