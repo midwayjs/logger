@@ -1,4 +1,13 @@
 
+3.0.0-beta.20 / 2023-10-19
+==========================
+
+  * fix: legacy file log name will be ignore when error log name not set
+  * feat: add legacy options format
+  * fix; timestamp format
+  * fix legacy options and write args
+  * chore: update typings
+
 3.0.0-beta.19 / 2023-10-14
 ==========================
 
