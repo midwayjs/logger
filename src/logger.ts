@@ -7,7 +7,7 @@ import {
   LoggerOptions,
   LogMeta,
 } from './interface';
-import { formatLegacyLoggerOptions, isEnableLevel } from './util';
+import { formatLoggerOptions, isEnableLevel } from './util';
 import { EOL } from 'os';
 import { Transport } from './transport/transport';
 import { ConsoleTransport } from './transport/console';
@@ -26,7 +26,7 @@ export class MidwayLogger implements ILogger {
   protected options: LoggerOptions;
 
   constructor(options: LoggerOptions = {}) {
-    options = formatLegacyLoggerOptions(options);
+    options = formatLoggerOptions(options);
     this.options = options;
     this.options.level = this.options.level || 'silly';
     this.options.eol = this.options.eol || EOL;

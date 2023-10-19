@@ -1,26 +1,23 @@
 import { formatLegacyLoggerOptions } from '../src/util';
 
 describe('/test/legacy.test.ts', () => {
-  it('should parse legacy options', () => {
+  it('should parse legacy options and ignore new options', () => {
     expect(
       formatLegacyLoggerOptions({
         level: 'info',
         transports: {
           console: {},
           file: {},
-          json: {}
+          json: {},
         },
         enableFile: false,
         disableConsole: true,
+        enableJSON: true,
       } as any)
     ).toMatchInlineSnapshot(`
       {
         "level": "info",
-        "transports": {
-          "console": false,
-          "file": false,
-          "json": {},
-        },
+        "transports": {},
       }
     `);
   });
@@ -29,18 +26,67 @@ describe('/test/legacy.test.ts', () => {
     expect(
       formatLegacyLoggerOptions({
         level: 'info',
-        transports: {
-          console: {},
-          file: {},
-        },
         disableFile: true,
-      } as any)
+      })
+    ).toMatchInlineSnapshot(`
+      {
+        "level": "info",
+        "transports": {},
+      }
+    `);
+  });
+
+  it('should test level and file level', () => {
+    expect(
+      formatLegacyLoggerOptions({
+        level: 'info',
+        consoleLevel: 'debug',
+        disableFile: true,
+      })
     ).toMatchInlineSnapshot(`
       {
         "level": "info",
         "transports": {
-          "console": {},
-          "file": false,
+          "console": {
+            "level": "debug",
+          },
+        },
+      }
+    `);
+  });
+
+  it('should test console and file format', () => {
+    expect(
+      formatLegacyLoggerOptions({
+        level: 'info',
+        format: (info) => {return 'ok'},
+        consoleLevel: 'debug',
+        dir: '/abc',
+        fileLogName: 'test.log',
+        errorDir: '/abc/error',
+        enableJSON: true,
+        jsonLogName: 'test.json',
+      })
+    ).toMatchInlineSnapshot(`
+      {
+        "format": [Function],
+        "level": "info",
+        "transports": {
+          "console": {
+            "level": "debug",
+          },
+          "error": {
+            "dir": "/abc/error",
+            "fileLogName": "test.log",
+          },
+          "file": {
+            "dir": "/abc",
+            "fileLogName": "test.log",
+          },
+          "json": {
+            "dir": "/abc",
+            "fileLogName": "test.json",
+          },
         },
       }
     `);
