@@ -6,7 +6,7 @@ import {
   LogMeta,
 } from '../interface';
 import { Transport } from './transport';
-import { FileStreamRotator } from './fileStreamRotator';
+import { FileStreamRotatorManager } from './fileStreamRotator';
 import * as path from 'path';
 import * as zlib from 'zlib';
 import * as fs from 'fs';
@@ -45,8 +45,6 @@ export class FileTransport
       throw new Error('Your path or filename contain an invalid character.');
     }
 
-    const rotator = new FileStreamRotator();
-
     const defaultStreamOptions = {
       frequency: 'custom',
       dateFormat: 'YYYY-MM-DD',
@@ -59,7 +57,7 @@ export class FileTransport
       zippedArchive: false,
     } as Omit<StreamOptions, 'filename'>;
 
-    this.logStream = rotator.getStream({
+    this.logStream = FileStreamRotatorManager.getStream({
       ...defaultStreamOptions,
       filename: path.join(this.options.dir, this.options.fileLogName),
       size: getMaxSize(options.maxSize || '200m'),
@@ -145,7 +143,7 @@ export class FileTransport
     }
 
     if (this.logStream) {
-      this.logStream.end();
+      FileStreamRotatorManager.close(this.logStream);
       // 处理重复调用 close
       this.logStream = null;
     }

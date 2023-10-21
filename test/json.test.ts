@@ -1,8 +1,13 @@
 import { join } from 'path';
 import { fileExists, includeContent, matchContentTimes, removeFileOrDir, sleep } from './util';
 import { clearAllLoggers, createLogger, IMidwayLogger, JSONTransport, LoggerInfo, FileTransport } from '../src';
+import { FileStreamRotatorManager } from '../src/transport/fileStreamRotator';
 
 describe('/test/json.test.ts', function () {
+
+  afterEach(() => {
+    FileStreamRotatorManager.clear();
+  });
 
   it('should test create logger with json output', async () => {
     const logsDir = join(__dirname, 'logs')

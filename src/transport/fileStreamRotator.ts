@@ -218,7 +218,7 @@ export class FileStreamRotator {
         const oldestDate = dayjs()
           .subtract(audit.keep.amount, 'days')
           .valueOf();
-        const recentFiles = audit.files.filter(file => {
+        audit.files = audit.files.filter(file => {
           if (file.date > oldestDate) {
             return true;
           }
@@ -227,7 +227,6 @@ export class FileStreamRotator {
           stream.emit('logRemoved', file);
           return false;
         });
-        audit.files = recentFiles;
       } else {
         const filesToKeep = audit.files.splice(-audit.keep.amount);
         if (audit.files.length > 0) {
@@ -390,6 +389,7 @@ export class FileStreamRotator {
       // 这里用了一个事件代理，方便代理的内容做处理
       const stream: any = new EventEmitter();
       stream.auditLog = auditLog;
+      stream.filename = options.filename;
       stream.end = (...args) => {
         rotateStream.end(...args);
         resetCurLogSize.clear();
@@ -498,5 +498,66 @@ export class FileStreamRotator {
       });
       return rotateStream;
     }
+  }
+}
+
+export class FileStreamRotatorManager {
+  private static streamPool = new Map();
+  private static loggerRef: WeakMap<NonNullable<unknown>, number> =
+    new WeakMap();
+  public static enabled = true;
+
+  static getStream(options: StreamOptions) {
+    let stream;
+    if (this.enabled) {
+      // 以文件路径作为缓存
+      if (!this.streamPool.has(options.filename)) {
+        const stream = new FileStreamRotator().getStream(options);
+        this.streamPool.set(options.filename, stream);
+        this.loggerRef.set(stream, 0);
+      }
+
+      stream = this.streamPool.get(options.filename);
+      let num = this.loggerRef.get(stream);
+      this.loggerRef.set(stream, num++);
+    } else {
+      stream = new FileStreamRotator().getStream(options);
+    }
+
+    return stream;
+  }
+
+  static close(stream) {
+    if (this.enabled) {
+      if (this.loggerRef.has(stream)) {
+        let num = this.loggerRef.get(stream);
+        num--;
+        if (num === 0) {
+          // close real stream and clean
+          stream.end();
+          this.streamPool.delete(stream.filename);
+          this.loggerRef.delete(stream);
+        } else if (num > 0) {
+          // just set num
+          this.loggerRef.set(stream, num);
+        } else {
+          // ignore
+        }
+      }
+    } else {
+      stream.end();
+    }
+  }
+
+  static clear() {
+    // clear streamPool
+    for (const stream of this.streamPool.values()) {
+      stream.end();
+      if (this.loggerRef.has(stream)) {
+        this.loggerRef.delete(stream);
+      }
+    }
+    this.streamPool.clear();
+    this.loggerRef = new WeakMap();
   }
 }

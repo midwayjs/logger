@@ -12,6 +12,7 @@ export * from './logger';
 export * from './transport/transport';
 export * from './transport/file';
 export * from './transport/console';
+export * from './transport/fileStreamRotator';
 export * from './factory';
 export * from './util';
 

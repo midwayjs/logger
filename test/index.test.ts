@@ -24,9 +24,11 @@ import {
 import * as os from 'os';
 import { readdirSync, readFileSync, writeFileSync } from 'fs';
 import { supportsColor } from '../src/util/color';
+import { FileStreamRotatorManager } from '../src/transport/fileStreamRotator';
 
 describe('/test/index.test.ts', () => {
   afterEach(() => {
+    FileStreamRotatorManager.clear();
     jest.clearAllMocks();
     jest.resetAllMocks();
   });
