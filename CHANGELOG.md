@@ -1,4 +1,10 @@
 
+3.0.0 / 2023-10-21
+==================
+
+  * feat: multiplexing write streams
+  * doc: update readme
+
 3.0.0-beta.20 / 2023-10-19
 ==========================
 
