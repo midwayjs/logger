@@ -10,26 +10,6 @@ import {
 import { getFormatDate } from '../util';
 import { LEVEL } from '../constants';
 
-// export abstract class Transport extends Transform {
-//   constructor() {
-//     super({
-//       objectMode: true,
-//     });
-//   }
-//   _transform(
-//     chunk: any,
-//     encoding: BufferEncoding,
-//     callback: TransformCallback
-//   ) {
-//     const buffer = this.format(chunk);
-//     this.push(buffer);
-//
-//     callback(null, true);
-//   }
-//
-//   abstract format(chunk: any): Buffer;
-// }
-
 export abstract class Transport<TransportOptions extends BaseTransportOptions>
   implements ITransport
 {

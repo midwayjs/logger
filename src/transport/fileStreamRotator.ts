@@ -8,161 +8,21 @@ import { debuglog, format } from 'util';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import * as assert from 'assert';
-import { debounce } from '../util';
+import {
+  BubbleEvents,
+  checkDailyAndTest,
+  checkNumAndType,
+  createCurrentSymLink,
+  debounce,
+  mkDirForFile,
+  removeFile,
+} from '../util';
 import { StreamOptions } from '../interface';
 
 const debug = debuglog('midway-logger');
 const staticFrequency = ['daily', 'test', 's', 'm', 'h', 'custom'];
 const DATE_FORMAT = 'YYYYMMDDHHmm';
 dayjs.extend(utc);
-
-/**
- * Returns frequency metadata for minute/hour rotation
- * @param type
- * @param num
- * @returns {*}
- * @private
- */
-const checkNumAndType = function (type, num) {
-  if (typeof num === 'number') {
-    switch (type) {
-      case 's':
-      case 'm':
-        if (num < 0 || num > 60) {
-          return false;
-        }
-        break;
-      case 'h':
-        if (num < 0 || num > 24) {
-          return false;
-        }
-        break;
-    }
-    return { type: type, digit: num };
-  }
-};
-
-/**
- * Returns frequency metadata for defined frequency
- * @param freqType
- * @returns {*}
- * @private
- */
-const _checkDailyAndTest = function (freqType) {
-  switch (freqType) {
-    case 'custom':
-    case 'daily':
-      return { type: freqType, digit: undefined };
-    case 'test':
-      return { type: freqType, digit: 0 };
-  }
-  return false;
-};
-
-/**
- * Removes old log file
- * @param file
- * @param file.hash
- * @param file.name
- * @param file.date
- * @param file.hashType
- */
-function removeFile(file) {
-  if (
-    file.hash ===
-    crypto
-      .createHash(file.hashType)
-      .update(file.name + 'LOG_FILE' + file.date)
-      .digest('hex')
-  ) {
-    try {
-      if (fs.existsSync(file.name)) {
-        fs.unlinkSync(file.name);
-      }
-    } catch (e) {
-      debug(
-        new Date().toLocaleString(),
-        '[FileStreamRotator] Could not remove old log file: ',
-        file.name
-      );
-    }
-  }
-}
-
-/**
- * Create symbolic link to current log file
- * @param {String} logfile
- * @param {String} name Name to use for symbolic link
- */
-function createCurrentSymLink(logfile, name) {
-  const symLinkName = name || 'current.log';
-  const logPath = path.dirname(logfile);
-  const logfileName = path.basename(logfile);
-  const current = logPath + '/' + symLinkName;
-  try {
-    const stats = fs.lstatSync(current);
-    if (stats.isSymbolicLink()) {
-      fs.unlinkSync(current);
-      fs.symlinkSync(logfileName, current);
-    }
-  } catch (err) {
-    if (err && err.code === 'ENOENT') {
-      try {
-        fs.symlinkSync(logfileName, current);
-      } catch (e) {
-        debug(
-          new Date().toLocaleString(),
-          '[FileStreamRotator] Could not create symlink file: ',
-          current,
-          ' -> ',
-          logfileName
-        );
-      }
-    }
-  }
-}
-
-/**
- * Check and make parent directory
- * @param pathWithFile
- */
-const mkDirForFile = function (pathWithFile) {
-  const _path = path.dirname(pathWithFile);
-  _path.split(path.sep).reduce((fullPath, folder) => {
-    fullPath += folder + path.sep;
-    if (!fs.existsSync(fullPath)) {
-      try {
-        fs.mkdirSync(fullPath);
-      } catch (e) {
-        if (e.code !== 'EEXIST') {
-          throw e;
-        }
-      }
-    }
-    return fullPath;
-  }, '');
-};
-
-/**
- * Bubbles events to the proxy
- * @param emitter
- * @param proxy
- * @constructor
- */
-function BubbleEvents(emitter, proxy) {
-  emitter.on('close', () => {
-    proxy.emit('close');
-  });
-  emitter.on('finish', () => {
-    proxy.emit('finish');
-  });
-  emitter.on('error', err => {
-    proxy.emit('error', err);
-  });
-  emitter.on('open', fd => {
-    proxy.emit('open', fd);
-  });
-}
 
 export class FileStreamRotator {
   /**
@@ -176,7 +36,7 @@ export class FileStreamRotator {
       return checkNumAndType(f[2], parseInt(f[1]));
     }
 
-    const dailyOrTest = _checkDailyAndTest(frequency);
+    const dailyOrTest = checkDailyAndTest(frequency);
     if (dailyOrTest) {
       return dailyOrTest;
     }

@@ -78,11 +78,8 @@ export class FileTransport
           try {
             fs.unlinkSync(gzName);
           } catch (_err) {
-            // file is there but we got an error when trying to delete,
-            // so permissions problem or concurrency issue and another
-            // process already deleted it we could detect the concurrency
-            // issue by checking err.type === ENOENT or EACCESS for
-            // permissions ... but then?
+            // 尝试删除文件时可能会有些报错，比如权限问题，输出到 stderr 中
+            console.error(_err);
           }
           return;
         }

@@ -5,6 +5,7 @@ import { dirname, basename } from 'path';
 import * as crypto from 'crypto';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
+import * as path from 'path';
 dayjs.extend(utc);
 
 export function isEnableLevel(
@@ -15,6 +16,70 @@ export function isEnableLevel(
     return true;
   }
   return DefaultLogLevels[inputLevel] <= DefaultLogLevels[baseLevel];
+}
+
+/**
+ * Returns frequency metadata for minute/hour rotation
+ * @param type
+ * @param num
+ * @returns {*}
+ * @private
+ */
+export function checkNumAndType(type, num) {
+  if (typeof num === 'number') {
+    switch (type) {
+      case 's':
+      case 'm':
+        if (num < 0 || num > 60) {
+          return false;
+        }
+        break;
+      case 'h':
+        if (num < 0 || num > 24) {
+          return false;
+        }
+        break;
+    }
+    return { type: type, digit: num };
+  }
+}
+
+/**
+ * Returns frequency metadata for defined frequency
+ * @param freqType
+ * @returns {*}
+ * @private
+ */
+export function checkDailyAndTest(freqType) {
+  switch (freqType) {
+    case 'custom':
+    case 'daily':
+      return { type: freqType, digit: undefined };
+    case 'test':
+      return { type: freqType, digit: 0 };
+  }
+  return false;
+}
+
+/**
+ * Check and make parent directory
+ * @param pathWithFile
+ */
+export function mkDirForFile(pathWithFile) {
+  const _path = path.dirname(pathWithFile);
+  _path.split(path.sep).reduce((fullPath, folder) => {
+    fullPath += folder + path.sep;
+    if (!fs.existsSync(fullPath)) {
+      try {
+        fs.mkdirSync(fullPath);
+      } catch (e) {
+        if (e.code !== 'EEXIST') {
+          throw e;
+        }
+      }
+    }
+    return fullPath;
+  }, '');
 }
 
 /**
@@ -601,4 +666,25 @@ export function formatLegacyLoggerOptions(
   }
 
   return unknownLoggerOptions as LoggerOptions;
+}
+
+/**
+ * Bubbles events to the proxy
+ * @param emitter
+ * @param proxy
+ * @constructor
+ */
+export function BubbleEvents(emitter, proxy) {
+  emitter.on('close', () => {
+    proxy.emit('close');
+  });
+  emitter.on('finish', () => {
+    proxy.emit('finish');
+  });
+  emitter.on('error', err => {
+    proxy.emit('error', err);
+  });
+  emitter.on('open', fd => {
+    proxy.emit('open', fd);
+  });
 }

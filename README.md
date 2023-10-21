@@ -2,7 +2,7 @@
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/midwayjs/midway/pulls)
 
-@midwayjs/logger is a log module extended based on winston, which is suitable for log output under a single process, and supports multiple formats and customizations.
+@midwayjs/logger is a log module for midway project.
 
 ## Install
 
@@ -20,7 +20,11 @@ const logger = loggers.createLogger('logger', {
 })
 ```
 
-Create logger with console and file transports.
+
+
+## Create With Transport
+
+Create logger with console and file transports instance.
 
 ```typescript
 import { loggers, ConsoleTransport, FileTransport } from '@midwayjs/logger';
@@ -46,6 +50,23 @@ const logger = loggers.createLogger('consoleLogger', {
 })
 ```
 
+Create logger with options mode.
+
+```typescript
+const logger = loggers.createLogger('consoleLogger', {
+  transports: {
+    console: {
+      autoColors: true,
+    },
+    file: {
+      dir: '...',
+      fileLogName: 'app.log',
+    }
+  }
+})
+```
+
+
 
 ## Logger Output Method
 
@@ -56,6 +77,8 @@ logger.warn('warning!');
 logger.error(new Error('my error'));
 logger.write('abcde);
 ```
+
+
 
 ## Logger Level
 
@@ -90,15 +113,20 @@ logger.debug('debug info');
 logger.info('debug info');
 ```
 
-## Format
 
-Change file and error logger format.
+
+## Format and ContextFormat
+
+Add logger format and context format.
 
 ```typescript
 const logger = loggers.createLogger('logger', {
   // ...
   format: info => {
     return `${info.timestamp} ${info.message}`;
+  },
+  contextFormat: info => {
+    return `${info.timestamp} [${info.ctx.traceId}] ${info.message}`;
   }
 });
 ```
@@ -106,7 +134,73 @@ const logger = loggers.createLogger('logger', {
 info is a default metadata, include some properties.
 
 
-## Logger Options
+
+## Tranports
+
+The actual behavior of the log output we call the transport.The log library has four built-in default Transports.
+
+* `ConsoleTransport` Output message to stdout and stderr with color.
+* `FileTransport` Output message to file and rotate by self.
+* `ErrorTransport` Inherit `FileTransport` and only output error message.
+* `JSONTransport` Inherit `FileTransport` and output json format.
+
+The above Transports are all registered by default and can be configured by the name when registering.
+
+```typescript
+const logger = loggers.createLogger('consoleLogger', {
+  transports: {
+    console: {/*...options*/},
+    file: {/*...options*/},
+    error: {/*...options*/},
+    json: {/*...options*/},
+  }
+});
+```
+
+
+
+## Implement a new Transport
+
+Inherit Transport abstract class and implement `log` and `close` method.
+
+```typescript
+import { Transport, ITransport } from '@midwayjs/logger';
+
+export interface CustomTransportOptions {
+  // ...
+}
+
+export class CustomTransport extends Transport<CustomTransportOptions> implements ITransport {
+  log(level: LoggerLevel | false, meta: LogMeta, ...args) {
+    // save file or post to remote server
+  }
+  
+  close() {}
+}
+```
+
+Register class to `TransportManager` before used.
+
+```typescript
+import { TransportManager } from '@midwayjs/logger';
+
+TransportManager.set('custom', CustomTransport);
+```
+
+And you can configure it in your code.
+
+```typescript
+const logger = loggers.createLogger('consoleLogger', {
+  transports: {
+    custom: {/*...options*/}
+  }
+});
+```
+
+
+
+
+## Default Logger Options
 
 find more options in [interface](https://github.com/midwayjs/logger/blob/main/src/interface.ts).
 
