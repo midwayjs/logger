@@ -99,11 +99,13 @@ export class LoggerFactory extends Map<string, ILogger> {
               dir: join(logRoot, 'logs', appInfo.name),
               fileLogName: 'midway-app.log',
               auditFileDir: '.audit',
+              bufferWrite: true,
             },
             error: {
               dir: join(logRoot, 'logs', appInfo.name),
               fileLogName: 'common-error.log',
               auditFileDir: '.audit',
+              bufferWrite: true,
             },
           },
         },
