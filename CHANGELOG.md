@@ -1,4 +1,15 @@
 
+2.19.1 / 2023-10-28
+===================
+
+  * chore: add typings export for midway new version
+  * Release 2.19.0
+  * feat: support logger v3 and add default midway logger config (#98)
+  * Release 2.18.0
+  * feat: add file options (#92)
+  * chore(deps): update dependency @types/node to v18.17.15 (#88)
+  * chore(deps): update actions/checkout action to v4 (#91)
+
 2.19.0 / 2023-10-14
 ===================
 
