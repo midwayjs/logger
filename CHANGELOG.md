@@ -1,4 +1,11 @@
 
+3.0.1 / 2023-10-28
+==================
+
+  * chore: enable buffer in prod env (#102)
+  * chore: add midway loggerOptions interface (#101)
+  * chore(deps): update actions/setup-node action to v4 (#99)
+
 3.0.0 / 2023-10-21
 ==================
 
