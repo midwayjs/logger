@@ -2,8 +2,8 @@
   "name": "@midwayjs/logger",
   "version": "2.19.0",
   "description": "midway logger sdk",
-  "main": "dist/index",
-  "typings": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "typings": "index.d.ts",
   "dependencies": {
     "dayjs": "^1.10.7",
     "object-hash": "^3.0.0",
@@ -30,7 +30,8 @@
   },
   "files": [
     "dist/**/*.js",
-    "dist/**/*.d.ts"
+    "dist/**/*.d.ts",
+    "index.d.ts"
   ],
   "keywords": [
     "midway",
