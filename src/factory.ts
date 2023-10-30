@@ -90,7 +90,7 @@ export class LoggerFactory extends Map<string, ILogger> {
     return {
       midwayLogger: {
         default: {
-          level: isDevelopment ? 'info' : 'warn',
+          level: 'info',
           transports: {
             console: {
               autoColors: isDevelopment,

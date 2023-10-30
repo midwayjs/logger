@@ -20,6 +20,7 @@ export type LoggerInfo = {
   pid: number;
   message: string;
   ctx?: any;
+  originError?: Error;
 };
 
 export interface LoggerOptions {
