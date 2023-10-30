@@ -75,7 +75,7 @@ logger.debug('debug info');
 logger.info('启动耗时 %d ms', Date.now() - start);
 logger.warn('warning!');
 logger.error(new Error('my error'));
-logger.write('abcde);
+logger.write('abcde');
 ```
 
 

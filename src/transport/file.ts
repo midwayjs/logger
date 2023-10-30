@@ -123,7 +123,6 @@ export class FileTransport
       }
     } else {
       this.logStream.write(buf);
-      // this.emit('logged', info);
     }
   }
 
@@ -201,7 +200,6 @@ export class JSONTransport extends FileTransport {
       }
     } else {
       this.logStream.write(buf);
-      // this.emit('logged', info);
     }
   }
 }
