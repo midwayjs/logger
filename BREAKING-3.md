@@ -54,6 +54,15 @@ logger.get('console').level = 'info';
 - logger.getDefaultLabel()
 - logger.getDefaultFormat()
 
+## 类型定义的变化
+
+如果在配置中没有了 midwayLogger 的类型提示，你需要在 `src/interface.ts` 中加入日志库的引用。
+
+```ts
+// src/interface.ts
+import type {} from '@midwayjs/logger';
+```
+
 
 ## 配置格式变化
 
