@@ -153,3 +153,20 @@ class CustomTransport extends Transport<CustomOptions> implements ITransport {
   }
 }
 ```
+
+## 新老配置转换
+
+日志库提供了一个转换方法，辅助用户将老配置转变为新的配置。
+
+```ts
+import { formatLegacyLoggerOptions } from '@midwayjs/logger';
+
+const newLoggerConfig = formatLegacyLoggerOptions({
+  level: 'info',
+  enableFile: false,
+  disableConsole: true,
+  enableJSON: true,
+});
+```
+
+注意，这个方法只能转换老的配置，如果配置中同时包含新老配置，则新配置不会有任何变化。
