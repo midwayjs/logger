@@ -1,4 +1,5 @@
 import {
+  ContextLoggerOptions,
   ILogger,
   IMidwayLogger,
   LoggerLevel,
@@ -242,5 +243,13 @@ export class MidwayLoggerContainer extends Map<string, ILogger> {
         },
       },
     };
+  }
+
+  createContextLogger(
+    ctx: any,
+    appLogger: ILogger,
+    options: ContextLoggerOptions = {}
+  ): ILogger {
+    return (appLogger as IMidwayLogger).createContextLogger(ctx, options);
   }
 }
