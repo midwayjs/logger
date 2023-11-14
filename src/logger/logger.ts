@@ -428,7 +428,9 @@ export class MidwayBaseLogger extends WinstonLogger implements IMidwayLogger {
   }
 
   add(transport): any {
-    return super.add(transport);
+    if (transport['log']) {
+      return super.add(transport);
+    }
   }
 
   remove(transport: any): any {
