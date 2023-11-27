@@ -1,4 +1,5 @@
 import { formatLegacyLoggerOptions } from '../src/util';
+import { FileTransport } from '../src';
 
 describe('/test/legacy.test.ts', () => {
   it('should parse legacy options and ignore new options', () => {
@@ -17,7 +18,11 @@ describe('/test/legacy.test.ts', () => {
     ).toMatchInlineSnapshot(`
       {
         "level": "info",
-        "transports": {},
+        "transports": {
+          "console": false,
+          "file": false,
+          "json": {},
+        },
       }
     `);
   });
@@ -93,7 +98,7 @@ describe('/test/legacy.test.ts', () => {
     `);
   });
 
-  it('should teest parse error log name', () => {
+  it('should test parse error log name', () => {
     expect(
       formatLegacyLoggerOptions({
         dir: '/mock-production-app/logs',
@@ -114,6 +119,60 @@ describe('/test/legacy.test.ts', () => {
             "fileLogName": "middleware.log",
           },
           "json": false,
+        },
+      }
+    `);
+  });
+
+  it('should test new options', () => {
+    const newOptions = formatLegacyLoggerOptions({
+      format: info => {
+        return `${info.level.toUpperCase()} ${process.pid} ${info.args}`;
+      },
+      transports: {
+        file: new FileTransport({
+          dir: __dirname,
+          fileLogName: 'test-logger.log',
+          createSymlink: false,
+        }),
+        error: new FileTransport({
+          level: 'error',
+          dir: __dirname,
+          fileLogName: 'test-error.log',
+          createSymlink: false,
+        }),
+      },
+    });
+
+    expect(newOptions.transports.file).toBeDefined();
+    expect(newOptions.transports.error).toBeDefined();
+    expect(newOptions.transports.format).toBeUndefined();
+  });
+
+  it('should test legacy options mixin new options', () => {
+    const newOptions = formatLegacyLoggerOptions({
+      level: 'info',
+      dir: 'abc',
+      fileLogName: 'test.log',
+      errorLogName: 'error.log',
+      transports: {
+        file: {
+          dir: 'def',
+          fileLogName: 'test-logger.log',
+          createSymlink: false,
+        },
+      },
+    });
+
+    expect(newOptions).toMatchInlineSnapshot(`
+      {
+        "level": "info",
+        "transports": {
+          "file": {
+            "createSymlink": false,
+            "dir": "def",
+            "fileLogName": "test-logger.log",
+          },
         },
       }
     `);
