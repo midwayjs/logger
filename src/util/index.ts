@@ -560,7 +560,7 @@ const legacyOptionsKeys: {
  * @param unknownLoggerOptions
  */
 export function formatLegacyLoggerOptions(
-  unknownLoggerOptions: LegacyLoggerOptions
+  unknownLoggerOptions: LoggerOptions & LegacyLoggerOptions
 ): LoggerOptions {
   function setTransportOptions(
     newOptions: any,
@@ -592,6 +592,7 @@ export function formatLegacyLoggerOptions(
 
       if (!legacyOptionsKeys[key]) {
         // 如果值不在 legacyOptionsKeys 中，直接忽略
+        newOptions[key] = unknownLoggerOptions[key];
         continue;
       } else {
         if (legacyOptionsKeys[key].ignore) {
