@@ -1,4 +1,52 @@
 
+3.1.0 / 2023-11-27
+==================
+
+  * feat: support legacy options mixin new options (#105)
+  * chore(deps): update dependency typescript to v5.3.2 (#104)
+  * Update BREAKING-3.md
+  * Update BREAKING-3.md
+  * Release 3.0.2
+  * chore: add breaking doc (#103)
+  * Release 3.0.1
+  * chore: enable buffer in prod env (#102)
+  * chore: add midway loggerOptions interface (#101)
+  * chore(deps): update actions/setup-node action to v4 (#99)
+  * Release 3.0.0
+  * feat: multiplexing write streams
+  * doc: update readme
+  * Release 3.0.0-beta.20
+  * fix: legacy file log name will be ignore when error log name not set
+  * feat: add legacy options format
+  * fix; timestamp format
+  * fix legacy options and write args
+  * chore: update typings
+  * Release 3.0.0-beta.19
+  * fix: disabled options
+  * Release 3.0.0-beta.18
+  * feat: support logMeta add contextFormat
+  * Release 3.0.0-beta.17
+  * chore: change logger name
+  * Release 3.0.0-beta.16
+  * chore: use options replace transport instance
+  * chore(deps): update dependency fs-extra to v11 (#81)
+  * chore(deps): update actions/checkout action to v4 (#97)
+  * Release 3.0.0-beta.15
+  * test: fix enable color case
+  * test: fix enable color case
+  * fix: lint
+  * chore: update default logger
+  * feat: support legacy options
+  * feat: support 1.x options
+  * chore: sync 2.18 changelog
+  * Release 3.0.0-beta.14
+  * Release 3.0.0-beta.1
+  * test: add buffer write case
+  * test: add reset
+  * chore: lint
+  * feat: code for v3
+  * chore: tmp code
+
 3.0.2 / 2023-10-30
 ==================
 
