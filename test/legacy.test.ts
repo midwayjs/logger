@@ -157,7 +157,7 @@ describe('/test/legacy.test.ts', () => {
       errorLogName: 'error.log',
       transports: {
         file: {
-          dir: __dirname,
+          dir: 'def',
           fileLogName: 'test-logger.log',
           createSymlink: false,
         },
@@ -170,7 +170,7 @@ describe('/test/legacy.test.ts', () => {
         "transports": {
           "file": {
             "createSymlink": false,
-            "dir": "/Users/harry/project/logger/test",
+            "dir": "def",
             "fileLogName": "test-logger.log",
           },
         },
