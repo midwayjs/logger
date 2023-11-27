@@ -165,6 +165,7 @@ describe('/test/legacy.test.ts', () => {
     });
 
     expect(newOptions).toMatchInlineSnapshot(`
+      {
         "level": "info",
         "transports": {
           "file": {
