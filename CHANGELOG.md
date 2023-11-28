@@ -1,4 +1,10 @@
 
+3.1.1 / 2023-11-28
+==================
+
+  * fix: audit dir and compatible with old configurations (#107)
+  * chore(deps): update dependency fs-extra to v11.2.0 (#106)
+
 3.1.0 / 2023-11-27
 ==================
 
