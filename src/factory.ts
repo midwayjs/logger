@@ -1,6 +1,7 @@
 import {
   ContextLoggerOptions,
   ILogger,
+  LegacyLoggerOptions,
   LoggerFactoryOptions,
   LoggerOptions,
 } from './interface';
@@ -15,7 +16,10 @@ export class LoggerFactory extends Map<string, ILogger> {
     super();
   }
 
-  createLogger(name: string, options: LoggerOptions): ILogger {
+  createLogger(
+    name: string,
+    options: LoggerOptions & LegacyLoggerOptions
+  ): ILogger {
     if (!this.has(name)) {
       debug('[logger]: Create logger "%s" with options %j', name, options);
       const logger = new MidwayLogger(

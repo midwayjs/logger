@@ -347,211 +347,263 @@ const legacyOptionsKeys: {
      * 如果值存在，是否覆盖
      */
     overwriteIfExists?: boolean;
+    /**
+     * 是否是老配置，用于识别是否需要转换
+     */
+    isOld?: boolean;
   };
 } = {
   level: {
     category: 'top',
     mappingKey: 'level',
+    isOld: false,
   },
   consoleLevel: {
     category: 'console',
     mappingKey: 'level',
+    isOld: true,
   },
   fileLevel: {
     category: 'file',
     mappingKey: 'level',
+    isOld: true,
   },
   jsonLevel: {
     category: 'json',
     mappingKey: 'level',
+    isOld: true,
   },
   format: {
     category: 'top',
     mappingKey: 'format',
+    isOld: false,
   },
   contextFormat: {
     category: 'top',
     mappingKey: 'contextFormat',
+    isOld: false,
   },
   jsonFormat: {
     category: 'json',
     mappingKey: 'format',
+    isOld: true,
   },
   dir: {
     category: ['file', 'error', 'json'],
     mappingKey: 'dir',
+    isOld: true,
   },
   errorDir: {
     category: 'error',
     mappingKey: 'dir',
     overwriteIfExists: true,
+    isOld: true,
   },
   jsonDir: {
     category: 'json',
     mappingKey: 'dir',
     overwriteIfExists: true,
+    isOld: true,
   },
   aliasName: {
     ignore: true,
+    isOld: false,
   },
   fileLogName: {
     category: ['file'],
     mappingKey: 'fileLogName',
+    isOld: true,
   },
   errorLogName: {
     category: 'error',
     mappingKey: 'fileLogName',
     overwriteIfExists: true,
+    isOld: true,
   },
   jsonLogName: {
     category: 'json',
     mappingKey: 'fileLogName',
     overwriteIfExists: true,
+    isOld: true,
   },
   enableConsole: {
     ignore: true,
+    isOld: true,
   },
   enableFile: {
     ignore: true,
+    isOld: true,
   },
   enableError: {
     ignore: true,
+    isOld: true,
   },
   enableJSON: {
     ignore: true,
+    isOld: true,
   },
   disableSymlink: {
     category: ['file', 'error', 'json'],
     mappingKey: 'createSymlink',
+    isOld: true,
   },
   disableFileSymlink: {
     category: 'file',
     mappingKey: 'createSymlink',
     reverseValue: true,
     overwriteIfExists: true,
+    isOld: true,
   },
   disableErrorSymlink: {
     category: 'error',
     mappingKey: 'createSymlink',
     reverseValue: true,
     overwriteIfExists: true,
+    isOld: true,
   },
   disableJSONSymlink: {
     category: 'json',
     mappingKey: 'createSymlink',
     reverseValue: true,
     overwriteIfExists: true,
+    isOld: true,
   },
   maxSize: {
     category: ['file', 'error', 'json'],
     mappingKey: 'maxSize',
+    isOld: true,
   },
   fileMaxSize: {
     category: 'file',
     mappingKey: 'maxSize',
     overwriteIfExists: true,
+    isOld: true,
   },
   errMaxSize: {
     category: 'error',
     mappingKey: 'maxSize',
     overwriteIfExists: true,
+    isOld: true,
   },
   jsonMaxSize: {
     category: 'json',
     mappingKey: 'maxSize',
     overwriteIfExists: true,
+    isOld: true,
   },
   maxFiles: {
     category: ['file', 'error', 'json'],
     mappingKey: 'maxFiles',
+    isOld: true,
   },
   fileMaxFiles: {
     category: 'file',
     mappingKey: 'maxFiles',
     overwriteIfExists: true,
+    isOld: true,
   },
   errMaxFiles: {
     category: 'error',
     mappingKey: 'maxFiles',
     overwriteIfExists: true,
+    isOld: true,
   },
   jsonMaxFiles: {
     category: 'json',
     mappingKey: 'maxFiles',
     overwriteIfExists: true,
+    isOld: true,
   },
   eol: {
     category: 'top',
     mappingKey: 'eol',
+    isOld: false,
   },
   jsonEol: {
     category: 'json',
     mappingKey: 'eol',
+    isOld: true,
   },
   zippedArchive: {
     category: ['file', 'error', 'json'],
     mappingKey: 'zippedArchive',
+    isOld: true,
   },
   fileZippedArchive: {
     category: 'file',
     mappingKey: 'zippedArchive',
     overwriteIfExists: true,
+    isOld: true,
   },
   errZippedArchive: {
     category: 'error',
     mappingKey: 'zippedArchive',
     overwriteIfExists: true,
+    isOld: true,
   },
   jsonZippedArchive: {
     category: 'json',
     mappingKey: 'zippedArchive',
     overwriteIfExists: true,
+    isOld: true,
   },
   datePattern: {
     category: ['file', 'error', 'json'],
     mappingKey: 'datePattern',
+    isOld: true,
   },
   fileDatePattern: {
     category: 'file',
     mappingKey: 'datePattern',
     overwriteIfExists: true,
+    isOld: true,
   },
   errDatePattern: {
     category: 'error',
     mappingKey: 'datePattern',
     overwriteIfExists: true,
+    isOld: true,
   },
   jsonDatePattern: {
     category: 'json',
     mappingKey: 'datePattern',
     overwriteIfExists: true,
+    isOld: true,
   },
   auditFileDir: {
     category: ['file', 'error', 'json'],
     mappingKey: 'auditFileDir',
+    isOld: true,
   },
   printFormat: {
     category: 'top',
     mappingKey: 'format',
+    isOld: true,
   },
   defaultMeta: {
     ignore: true,
+    isOld: true,
   },
   defaultLabel: {
     ignore: true,
+    isOld: true,
   },
   disableConsole: {
     ignore: true,
+    isOld: true,
   },
   disableFile: {
     ignore: true,
+    isOld: true,
   },
   disableError: {
     ignore: true,
+    isOld: true,
   },
   fileOptions: {
     category: ['file', 'error', 'json'],
     mappingKey: 'fileOptions',
+    isOld: true,
   },
 };
 
@@ -582,9 +634,23 @@ export function formatLegacyLoggerOptions(
     }
   }
 
+  function isValidTransport(obj) {
+    return obj && typeof obj === 'object' && obj['dir'] && obj['fileLogName'];
+  }
+
   // 如果包含任意一个老的配置，则需要转换成新的配置
-  if (Object.keys(unknownLoggerOptions).some(key => legacyOptionsKeys[key])) {
+  if (
+    Object.keys(unknownLoggerOptions).some(key => legacyOptionsKeys[key]?.isOld)
+  ) {
     const newOptions = { transports: {} } as LoggerOptions;
+
+    // 如果有新配置的值，那么先拿新配置赋值一遍，避免新配置将老配置合并的时候覆盖
+    for (const key of Object.keys(unknownLoggerOptions)) {
+      if (!legacyOptionsKeys[key]) {
+        // 新值直接覆盖，即使值存在，用 assign 避免引用
+        newOptions[key] = Object.assign({}, unknownLoggerOptions[key]);
+      }
+    }
 
     // 循环每个字段，如果是新的配置，直接赋值，如果是旧的配置，需要转换成新的配置
     for (const key of Object.keys(unknownLoggerOptions)) {
@@ -592,7 +658,6 @@ export function formatLegacyLoggerOptions(
 
       if (!legacyOptionsKeys[key]) {
         // 如果值不在 legacyOptionsKeys 中，直接忽略
-        newOptions[key] = unknownLoggerOptions[key];
         continue;
       } else {
         if (legacyOptionsKeys[key].ignore) {
@@ -632,35 +697,49 @@ export function formatLegacyLoggerOptions(
     }
 
     if (
-      newOptions.transports['console'] &&
-      (unknownLoggerOptions['enableConsole'] === false ||
-        unknownLoggerOptions['disableConsole'] === true)
+      unknownLoggerOptions['enableConsole'] === false ||
+      unknownLoggerOptions['disableConsole'] === true
     ) {
       newOptions.transports['console'] = false;
+    } else {
+      newOptions.transports['console'] = newOptions.transports['console'] ?? {};
     }
 
     if (
-      newOptions.transports['file'] &&
-      (unknownLoggerOptions['enableFile'] === false ||
-        unknownLoggerOptions['disableFile'] === true)
+      unknownLoggerOptions['enableFile'] === false ||
+      unknownLoggerOptions['disableFile'] === true
     ) {
       newOptions.transports['file'] = false;
+    } else {
+      newOptions.transports['file'] = newOptions.transports['file'] ?? {};
     }
 
     if (
-      newOptions.transports['error'] &&
-      (unknownLoggerOptions['enableError'] === false ||
-        unknownLoggerOptions['disableError'] === true)
+      unknownLoggerOptions['enableError'] === false ||
+      unknownLoggerOptions['disableError'] === true
     ) {
       newOptions.transports['error'] = false;
+    } else {
+      newOptions.transports['error'] = newOptions.transports['error'] ?? {};
     }
 
     if (
-      newOptions.transports['json'] &&
+      unknownLoggerOptions?.transports?.['json'] === undefined &&
       (unknownLoggerOptions['enableJSON'] === undefined ||
         unknownLoggerOptions['enableJSON'] === false)
     ) {
       newOptions.transports['json'] = false;
+    } else {
+      // 老版本 json 没有默认值
+    }
+
+    // 清理不合法的配置
+    for (const key of ['file', 'error', 'json']) {
+      if (newOptions?.transports?.[key]) {
+        if (!isValidTransport(newOptions.transports[key])) {
+          delete newOptions.transports[key];
+        }
+      }
     }
 
     return newOptions;

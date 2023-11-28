@@ -57,14 +57,18 @@ export class FileTransport
       zippedArchive: false,
     } as Omit<StreamOptions, 'filename'>;
 
+    if (!path.isAbsolute(this.options.auditFileDir)) {
+      options.auditFileDir = path.join(this.options.dir, options.auditFileDir);
+    }
+
     this.logStream = FileStreamRotatorManager.getStream({
       ...defaultStreamOptions,
       filename: path.join(this.options.dir, this.options.fileLogName),
-      size: getMaxSize(options.maxSize || '200m'),
+      size: getMaxSize(this.options.maxSize || '200m'),
       symlinkName: this.options.fileLogName,
       auditFile: path.join(
-        options.auditFileDir || this.options.dir,
-        '.' + hash(options) + '-audit.json'
+        options.auditFileDir,
+        '.' + hash(this.options) + '-audit.json'
       ),
       ...options,
     });
