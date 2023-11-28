@@ -57,6 +57,10 @@ export class FileTransport
       zippedArchive: false,
     } as Omit<StreamOptions, 'filename'>;
 
+    if (!this.options.auditFileDir) {
+      options.auditFileDir = this.options.dir;
+    }
+
     if (!path.isAbsolute(this.options.auditFileDir)) {
       options.auditFileDir = path.join(this.options.dir, options.auditFileDir);
     }

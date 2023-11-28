@@ -172,3 +172,9 @@ const newLoggerConfig = formatLegacyLoggerOptions({
 ~~注意，这个方法只能转换老的配置，如果配置中同时包含新老配置，则新配置不会有任何变化。~~
 
 当前版本已经可以同时支持新老配置，不需要转换了，如果新配置和老配置同时存在，老配置会忽略，你可以使用 `formatLegacyLoggerOptions` 方法测试转换后的结果。
+
+转换逻辑如下：
+
+* 1、如果配置中包含 `enableXXXX` 或者 `disableXXXX`，则会优先处理，即使存在 transports 的配置
+* 2、当新老配置同时存在时，老配置会被忽略，比如 dir 和 transports 中的 dir，则 transports 中的 dir 优先级更高
+* 3、转换完成后，如果 transports 中缺少必要的配置，比如 file/error/json 中缺少 dir 和 fileLogName，则会移除这个 Transport
