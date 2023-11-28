@@ -187,14 +187,17 @@ export interface LegacyLoggerOptions {
   level?: LoggerLevel;
   /**
    * level for console logger
+   * @deprecated
    */
   consoleLevel?: LoggerLevel;
   /**
    * level for file logger
+   * @deprecated
    */
   fileLevel?: LoggerLevel;
   /**
    * level for json logger
+   * @deprecated
    */
   jsonLevel?: LoggerLevel;
   /**
@@ -207,18 +210,22 @@ export interface LegacyLoggerOptions {
   contextFormat?: LoggerFormat;
   /**
    * format for json logger
+   * @deprecated
    */
   jsonFormat?: LoggerFormat;
   /**
    * The directory where file logger will be output
+   * @deprecated
    */
   dir?: string;
   /**
    * The directory where error logger will be output, if not set, use dir to instead.
+   * @deprecated
    */
   errorDir?: string;
   /**
    * The directory where json logger will be output, if not set, use dir to instead.
+   * @deprecated
    */
   jsonDir?: string;
   /**
@@ -227,46 +234,57 @@ export interface LegacyLoggerOptions {
   aliasName?: string;
   /**
    * Output log name for file logger
+   * @deprecated
    */
   fileLogName?: string;
   /**
    * Output log name for error logger
+   * @deprecated
    */
   errorLogName?: string;
   /**
    * Output log name for json logger
+   * @deprecated
    */
   jsonLogName?: string;
   /**
    * Enable console transport, default is true
+   * @deprecated
    */
   enableConsole?: boolean;
   /**
    * Enable console transport, default is true
+   * @deprecated
    */
   enableFile?: boolean;
   /**
    * Enable console transport, default is true
+   * @deprecated
    */
   enableError?: boolean;
   /**
    * Enable json transport, default is false
+   * @deprecated
    */
   enableJSON?: boolean;
   /**
    * disable symlink for file, error and json logger
+   * @deprecated
    */
   disableSymlink?: boolean;
   /**
    * disable symlink for file logger
+   * @deprecated
    */
   disableFileSymlink?: boolean;
   /**
    * disable symlink for error logger
+   * @deprecated
    */
   disableErrorSymlink?: boolean;
   /**
    * disable symlink for json logger
+   * @deprecated
    */
   disableJSONSymlink?: boolean;
   /**
@@ -276,18 +294,22 @@ export interface LegacyLoggerOptions {
    * If using the units, add 'k', 'm', or 'g' as the suffix.
    * The units need to directly follow the number.
    * default is 200m
+   * @deprecated
    */
   maxSize?: string;
   /**
    * max file size for file logger
+   * @deprecated
    */
   fileMaxSize?: string;
   /**
    * max file size for error logger
+   * @deprecated
    */
   errMaxSize?: string;
   /**
    * max file size for json logger
+   * @deprecated
    */
   jsonMaxSize?: string;
   /**
@@ -298,10 +320,23 @@ export interface LegacyLoggerOptions {
    * It won't delete any file not contained in it.
    * It can be a number of files or number of days
    * default is 31d
+   * @deprecated
    */
   maxFiles?: number | string;
+  /**
+   * max files for file logger
+   * @deprecated
+   */
   fileMaxFiles?: number | string;
+  /**
+   * max files for error logger
+   * @deprecated
+   */
   errMaxFiles?: number | string;
+  /**
+   * max files for json logger
+   * @deprecated
+   */
   jsonMaxFiles?: number | string;
   /**
    * end of line string for file and error logger
@@ -309,23 +344,28 @@ export interface LegacyLoggerOptions {
   eol?: string;
   /**
    * end of line string for json logger
+   * @deprecated
    */
   jsonEol?: string;
   /**
    * A boolean to define whether or not to gzip archived log files.
    * for file, error and json logger
+   * @deprecated
    */
   zippedArchive?: boolean;
   /**
    * gzip options for file logger
+   * @deprecated
    */
   fileZippedArchive?: boolean;
   /**
    * gzip options for error logger
+   * @deprecated
    */
   errZippedArchive?: boolean;
   /**
    * gzip options for json logger
+   * @deprecated
    */
   jsonZippedArchive?: boolean;
   /**
@@ -334,22 +374,27 @@ export interface LegacyLoggerOptions {
    * For example, if your datePattern is simply 'HH' you will end up with 24 log files that are picked up and appended to every day.
    * default: 'YYYY-MM-DD'
    * for file, error and json logger
+   * @deprecated
    */
   datePattern?: string;
   /**
    * date pattern for file logger
+   * @deprecated
    */
   fileDatePattern?: string;
   /**
    * date pattern for error logger
+   * @deprecated
    */
   errDatePattern?: string;
   /**
    * date pattern for json logger
+   * @deprecated
    */
   jsonDatePattern?: string;
   /**
    * A directory of the audit file with absolute path.
+   * @deprecated
    */
   auditFileDir?: string;
   /**

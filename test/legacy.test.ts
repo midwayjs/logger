@@ -21,7 +21,6 @@ describe('/test/legacy.test.ts', () => {
         "transports": {
           "console": false,
           "file": false,
-          "json": {},
         },
       }
     `);
@@ -36,7 +35,11 @@ describe('/test/legacy.test.ts', () => {
     ).toMatchInlineSnapshot(`
       {
         "level": "info",
-        "transports": {},
+        "transports": {
+          "console": {},
+          "file": false,
+          "json": false,
+        },
       }
     `);
   });
@@ -55,6 +58,8 @@ describe('/test/legacy.test.ts', () => {
           "console": {
             "level": "debug",
           },
+          "file": false,
+          "json": false,
         },
       }
     `);
@@ -82,9 +87,6 @@ describe('/test/legacy.test.ts', () => {
           "console": {
             "level": "debug",
           },
-          "error": {
-            "dir": "/abc/error",
-          },
           "file": {
             "dir": "/abc",
             "fileLogName": "test.log",
@@ -109,10 +111,7 @@ describe('/test/legacy.test.ts', () => {
     ).toMatchInlineSnapshot(`
       {
         "transports": {
-          "error": {
-            "auditFileDir": "/mock-production-app/logs/ali-demo/.audit",
-            "dir": "/mock-production-app/logs/ali-demo",
-          },
+          "console": {},
           "file": {
             "auditFileDir": "/mock-production-app/logs/ali-demo/.audit",
             "dir": "/mock-production-app/logs",
@@ -168,13 +167,183 @@ describe('/test/legacy.test.ts', () => {
       {
         "level": "info",
         "transports": {
+          "console": {},
+          "error": {
+            "dir": "abc",
+            "fileLogName": "error.log",
+          },
           "file": {
             "createSymlink": false,
             "dir": "def",
             "fileLogName": "test-logger.log",
           },
+          "json": false,
         },
       }
     `);
+  });
+
+  it('should test legacy options trans console', () => {
+    const newOptions = formatLegacyLoggerOptions({
+      dir: '/Users/harry/logs/gaia/function',
+      fileLogName: 'function-container.log',
+      enableError: false,
+      enableFile: false,
+      enableConsole: true,
+      eol: '\n',
+      maxFiles: 3,
+      maxSize: '200m',
+    });
+    console.log(newOptions);
+  });
+
+  describe('转换配置', () => {
+    it('只存在新配置', () => {
+      expect(
+        formatLegacyLoggerOptions({
+          level: 'all',
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "level": "all",
+        }
+      `);
+
+      expect(
+        formatLegacyLoggerOptions({
+          level: 'all',
+          transports: {
+            file: {
+              dir: 'bbc',
+              fileLogName: 'custom-logger.log',
+            },
+          },
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "level": "all",
+          "transports": {
+            "file": {
+              "dir": "bbc",
+              "fileLogName": "custom-logger.log",
+            },
+          },
+        }
+      `);
+    });
+
+    it('新老混合 1', () => {
+      expect(
+        formatLegacyLoggerOptions({
+          level: 'all',
+          enableFile: false,
+          transports: {
+            file: {
+              dir: 'bbc',
+              fileLogName: 'custom-logger.log',
+            },
+          },
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "level": "all",
+          "transports": {
+            "console": {},
+            "file": false,
+            "json": false,
+          },
+        }
+      `);
+    });
+
+    it('新老混合 2', () => {
+      // 老配置不会覆盖新配置
+      expect(
+        formatLegacyLoggerOptions({
+          level: 'all',
+          fileLogName: 'custom-logger1.log',
+          dir: 'bbc',
+          transports: {
+            file: {
+              fileLogName: 'custom-logger.log',
+            },
+          },
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "level": "all",
+          "transports": {
+            "console": {},
+            "file": {
+              "dir": "bbc",
+              "fileLogName": "custom-logger.log",
+            },
+            "json": false,
+          },
+        }
+      `);
+    });
+
+    it('新老混合 3', () => {
+      // 必须显式声明启用 json
+      expect(
+        formatLegacyLoggerOptions({
+          level: 'all',
+          fileLogName: 'custom-logger1.log',
+          dir: 'bbc',
+          jsonLogName: 'custom-logger.json',
+          transports: {
+            file: {
+              fileLogName: 'custom-logger.log',
+            },
+          },
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "level": "all",
+          "transports": {
+            "console": {},
+            "file": {
+              "dir": "bbc",
+              "fileLogName": "custom-logger.log",
+            },
+            "json": false,
+          },
+        }
+      `);
+    });
+
+    it('新老混合 4', () => {
+      // 必须显式声明启用 json
+      expect(
+        formatLegacyLoggerOptions({
+          level: 'all',
+          fileLogName: 'custom-logger1.log',
+          dir: 'bbc',
+          jsonLogName: 'custom-logger.json',
+          transports: {
+            file: {
+              fileLogName: 'custom-logger.log',
+            },
+          },
+          enableJSON: true,
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "level": "all",
+          "transports": {
+            "console": {},
+            "file": {
+              "dir": "bbc",
+              "fileLogName": "custom-logger.log",
+            },
+            "json": {
+              "dir": "bbc",
+              "fileLogName": "custom-logger.json",
+            },
+          },
+        }
+      `);
+    });
   });
 });

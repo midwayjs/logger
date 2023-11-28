@@ -3,6 +3,7 @@ import {
   ConsoleTransportOptions,
   FileTransportOptions,
   ILogger,
+  LegacyLoggerOptions,
   LoggerOptions,
 } from './interface';
 import { MidwayLogger } from './logger';
@@ -22,7 +23,7 @@ export const clearAllLoggers = () => {
 };
 export const createLogger = <T = ILogger>(
   name: string,
-  options: LoggerOptions = {}
+  options: LoggerOptions & LegacyLoggerOptions = {}
 ): T => {
   return loggers.createLogger(name, options) as T;
 };

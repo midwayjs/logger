@@ -3,6 +3,7 @@ import {
   ContextLoggerOptions,
   ILogger,
   ITransport,
+  LegacyLoggerOptions,
   LoggerLevel,
   LoggerOptions,
   LogMeta,
@@ -25,7 +26,7 @@ export class MidwayLogger implements ILogger {
   private closeHandlers: Array<() => void> = [];
   protected options: LoggerOptions;
 
-  constructor(options: LoggerOptions = {}) {
+  constructor(options: LoggerOptions & LegacyLoggerOptions = {}) {
     options = formatLegacyLoggerOptions(options);
     this.options = options;
     this.options.level = this.options.level || 'silly';
