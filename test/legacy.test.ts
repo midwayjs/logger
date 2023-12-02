@@ -345,5 +345,49 @@ describe('/test/legacy.test.ts', () => {
         }
       `);
     });
+
+    it('新老混合 5', () => {
+      // 默认配置
+      expect(
+        formatLegacyLoggerOptions({
+          fileLogName: 'midway-core.log',
+          errorLogName: 'common-error.log',
+          auditFileDir: '.audit',
+          dir: 'abc',
+          transports: {
+            console: {
+              autoColors: true,
+            },
+            file: {
+              bufferWrite: false,
+            },
+            error: {
+              bufferWrite: false,
+            },
+          },
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "transports": {
+            "console": {
+              "autoColors": true,
+            },
+            "error": {
+              "auditFileDir": ".audit",
+              "bufferWrite": false,
+              "dir": "abc",
+              "fileLogName": "common-error.log",
+            },
+            "file": {
+              "auditFileDir": ".audit",
+              "bufferWrite": false,
+              "dir": "abc",
+              "fileLogName": "midway-core.log",
+            },
+            "json": false,
+          },
+        }
+      `);
+    });
   });
 });
