@@ -94,31 +94,25 @@ export class LoggerFactory extends Map<string, ILogger> {
     return {
       midwayLogger: {
         default: {
+          fileLogName: 'midway-app.log',
+          errorLogName: 'common-error.log',
+          dir: join(logRoot, 'logs', appInfo.name),
+          auditFileDir: '.audit',
           transports: {
             console: {
               autoColors: isDevelopment,
             },
             file: {
-              dir: join(logRoot, 'logs', appInfo.name),
-              fileLogName: 'midway-app.log',
-              auditFileDir: '.audit',
               bufferWrite: !isDevelopment,
             },
             error: {
-              dir: join(logRoot, 'logs', appInfo.name),
-              fileLogName: 'common-error.log',
-              auditFileDir: '.audit',
               bufferWrite: !isDevelopment,
             },
           },
         },
         clients: {
           coreLogger: {
-            transports: {
-              file: {
-                fileLogName: 'midway-core.log',
-              },
-            },
+            fileLogName: 'midway-core.log',
           },
           appLogger: {},
         },
