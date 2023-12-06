@@ -389,5 +389,119 @@ describe('/test/legacy.test.ts', () => {
         }
       `);
     });
+
+    it('新老混合 6', () => {
+      expect(
+        formatLegacyLoggerOptions({
+          fileLogName: 'midway-app.log',
+          errorLogName: 'common-error.log',
+          dir: '/Users/harry/project/application/open-koa-v3/logs/my-midway-project',
+          auditFileDir: '.audit',
+          transports: {
+            console: {
+              autoColors: true,
+            },
+            file: {
+              bufferWrite: false,
+              dir: '/Users/harry/project/application/open-koa-v3/tmps/logs/WW_ES',
+              maxFiles: '90d',
+              fileLogName: 'WW_ES.log',
+            },
+            error: {
+              bufferWrite: false,
+              dir: '/Users/harry/project/application/open-koa-v3/tmps/logs/WW_ES',
+              maxFiles: '90d',
+              fileLogName: 'WW_ES-error.log',
+            },
+          },
+          level: 'info',
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "level": "info",
+          "transports": {
+            "console": {
+              "autoColors": true,
+            },
+            "error": {
+              "auditFileDir": ".audit",
+              "bufferWrite": false,
+              "dir": "/Users/harry/project/application/open-koa-v3/tmps/logs/WW_ES",
+              "fileLogName": "WW_ES-error.log",
+              "maxFiles": "90d",
+            },
+            "file": {
+              "auditFileDir": ".audit",
+              "bufferWrite": false,
+              "dir": "/Users/harry/project/application/open-koa-v3/tmps/logs/WW_ES",
+              "fileLogName": "WW_ES.log",
+              "maxFiles": "90d",
+            },
+            "json": false,
+          },
+        }
+      `);
+    });
+
+    it('新老混合 7', () => {
+      expect(
+        formatLegacyLoggerOptions({
+          fileLogName: 'midway-app.log',
+          errorLogName: 'common-error.log',
+          maxFiles: '1d',
+          errMaxFiles: '90d',
+          dir: '/Users/harry/project/application/open-koa-v3/logs/my-midway-project',
+          auditFileDir: '.audit',
+          level: 'info',
+        })
+      ).toMatchInlineSnapshot(`
+        {
+          "level": "info",
+          "transports": {
+            "console": {},
+            "error": {
+              "auditFileDir": ".audit",
+              "dir": "/Users/harry/project/application/open-koa-v3/logs/my-midway-project",
+              "fileLogName": "common-error.log",
+              "maxFiles": "90d",
+            },
+            "file": {
+              "auditFileDir": ".audit",
+              "dir": "/Users/harry/project/application/open-koa-v3/logs/my-midway-project",
+              "fileLogName": "midway-app.log",
+              "maxFiles": "1d",
+            },
+            "json": false,
+          },
+        }
+      `);
+    });
+
+    it('新老混合 8', () => {
+      const fileTransport = new FileTransport({
+        dir: __dirname,
+        fileLogName: 'test-logger.log',
+      });
+      const result = formatLegacyLoggerOptions({
+        level: 'warn',
+        fileLogName: 'midway-app.log',
+        transports: {
+          file: fileTransport,
+        },
+      });
+
+      expect(result.transports.file).toBe(fileTransport);
+      delete result['transports']['file'];
+
+      expect(result).toMatchInlineSnapshot(`
+        {
+          "level": "warn",
+          "transports": {
+            "console": {},
+            "json": false,
+          },
+        }
+      `);
+    });
   });
 });

@@ -6,6 +6,8 @@ import * as crypto from 'crypto';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import * as path from 'path';
+import * as os from 'os';
+import { Transport } from '../transport/transport';
 dayjs.extend(utc);
 
 export function isEnableLevel(
@@ -344,7 +346,7 @@ const legacyOptionsKeys: {
      */
     reverseValue?: boolean;
     /**
-     * 如果值存在，是否覆盖
+     * 如果值存在，是否覆盖（仅限两个老配置之间，比如 maxFiles 和 errMaxFiles）
      */
     overwriteIfExists?: boolean;
     /**
@@ -607,6 +609,9 @@ const legacyOptionsKeys: {
   },
 };
 
+const hasOwn = Object.prototype.hasOwnProperty;
+const toStr = Object.prototype.toString;
+
 /**
  * 转换老的配置项到新的配置
  * @param unknownLoggerOptions
@@ -614,6 +619,44 @@ const legacyOptionsKeys: {
 export function formatLegacyLoggerOptions(
   unknownLoggerOptions: LoggerOptions & LegacyLoggerOptions
 ): LoggerOptions {
+  function isPlainObject(obj) {
+    if (!obj || toStr.call(obj) !== '[object Object]') {
+      return false;
+    }
+
+    const hasOwnConstructor = hasOwn.call(obj, 'constructor');
+    const hasIsPrototypeOf =
+      obj.constructor &&
+      obj.constructor.prototype &&
+      hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
+    // Not own constructor property must be Object
+    if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
+      return false;
+    }
+
+    // Own properties are enumerated firstly, so to speed up,
+    // if last one is own, then all properties are own.
+    let key;
+    for (key in obj) {
+      /**/
+    }
+
+    return typeof key === 'undefined' || hasOwn.call(obj, key);
+  }
+
+  function deepMerge(target, source) {
+    if (source && !isPlainObject(source)) {
+      return source;
+    }
+    for (const key of Object.keys(source)) {
+      if (source[key] instanceof Object) {
+        Object.assign(source[key], deepMerge(target[key], source[key]));
+      }
+    }
+
+    Object.assign(target || {}, source);
+    return target;
+  }
   function setTransportOptions(
     newOptions: any,
     optionsKey: string,
@@ -635,7 +678,11 @@ export function formatLegacyLoggerOptions(
   }
 
   function isValidTransport(obj) {
-    return obj && typeof obj === 'object' && obj['dir'] && obj['fileLogName'];
+    return (
+      obj &&
+      (obj instanceof Transport ||
+        (typeof obj === 'object' && obj['dir'] && obj['fileLogName']))
+    );
   }
 
   // 如果包含任意一个老的配置，则需要转换成新的配置
@@ -643,15 +690,6 @@ export function formatLegacyLoggerOptions(
     Object.keys(unknownLoggerOptions).some(key => legacyOptionsKeys[key]?.isOld)
   ) {
     const newOptions = { transports: {} } as LoggerOptions;
-
-    // 如果有新配置的值，那么先拿新配置赋值一遍，避免新配置将老配置合并的时候覆盖
-    for (const key of Object.keys(unknownLoggerOptions)) {
-      if (!legacyOptionsKeys[key]) {
-        // 新值直接覆盖，即使值存在，用 assign 避免引用
-        newOptions[key] = Object.assign({}, unknownLoggerOptions[key]);
-      }
-    }
-
     // 循环每个字段，如果是新的配置，直接赋值，如果是旧的配置，需要转换成新的配置
     for (const key of Object.keys(unknownLoggerOptions)) {
       // 设置值到 transport 的 options 上
@@ -693,6 +731,13 @@ export function formatLegacyLoggerOptions(
             );
           }
         }
+      }
+    }
+
+    // 如果有新配置的值，那么先拿新配置赋值一遍，避免新配置将老配置合并的时候覆盖
+    for (const key of Object.keys(unknownLoggerOptions)) {
+      if (!legacyOptionsKeys[key]) {
+        deepMerge(newOptions[key], unknownLoggerOptions[key]);
       }
     }
 
@@ -767,4 +812,8 @@ export function BubbleEvents(emitter, proxy) {
   emitter.on('open', fd => {
     proxy.emit('open', fd);
   });
+}
+
+export function isWin32() {
+  return os.platform() === 'win32';
 }
