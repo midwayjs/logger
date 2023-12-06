@@ -15,6 +15,7 @@ import {
   isEnableLevel,
   isValidDirName,
   isValidFileName,
+  isWin32,
 } from '../util';
 import { hash } from '../util/hash';
 
@@ -52,7 +53,7 @@ export class FileTransport
       fileOptions: { flags: 'a' },
       utc: false,
       extension: '',
-      createSymlink: true,
+      createSymlink: !isWin32(), // windows 下不生成软链
       maxFiles: '7d',
       zippedArchive: false,
     } as Omit<StreamOptions, 'filename'>;
