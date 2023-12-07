@@ -23,29 +23,28 @@ export type LoggerInfo = {
   originError?: Error;
 };
 
-export type TransportUnionOptions = {
+export interface TransportUnionOptions {
   /**
    * console transport options
    */
-  console?: ConsoleTransportOptions | ITransport;
+  console?: ConsoleTransportOptions | ITransport | false;
   /**
    * file transport options
    */
-  file?: FileTransportOptions | ITransport;
+  file?: FileTransportOptions | ITransport | false;
   /**
    * error transport options
    */
-  error?: FileTransportOptions | ITransport;
+  error?: FileTransportOptions | ITransport | false;
   /**
    * json transport options
    */
-  json?: FileTransportOptions | ITransport;
-} | {
+  json?: FileTransportOptions | ITransport | false;
   /**
    * custom transport options
    */
-  [key: string]: Record<string, any> | ITransport;
-} | false;
+  [key: string]: Record<string, any> | ITransport | false;
+}
 
 export interface LoggerOptions {
   /**
