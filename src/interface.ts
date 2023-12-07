@@ -23,6 +23,30 @@ export type LoggerInfo = {
   originError?: Error;
 };
 
+export type TransportUnionOptions = {
+  /**
+   * console transport options
+   */
+  console?: ConsoleTransportOptions | ITransport;
+  /**
+   * file transport options
+   */
+  file?: FileTransportOptions | ITransport;
+  /**
+   * error transport options
+   */
+  error?: FileTransportOptions | ITransport;
+  /**
+   * json transport options
+   */
+  json?: FileTransportOptions | ITransport;
+} | {
+  /**
+   * custom transport options
+   */
+  [key: string]: Record<string, any> | ITransport;
+} | false;
+
 export interface LoggerOptions {
   /**
    * default level for console,file and json logger
@@ -43,7 +67,7 @@ export interface LoggerOptions {
   /**
    * Output transport
    */
-  transports?: Record<string, ITransport | Record<string, any> | false>;
+  transports?: TransportUnionOptions;
 }
 
 export interface ContextLoggerOptions {
