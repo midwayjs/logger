@@ -96,7 +96,8 @@ export function createCurrentSymLink(logfile, name) {
   const current = logPath + '/' + symLinkName;
   try {
     const stats = fs.lstatSync(current);
-    if (stats.isSymbolicLink()) {
+    const targetPath = fs.readlinkSync(current);
+    if (stats.isSymbolicLink() && targetPath !== logfileName) {
       fs.unlinkSync(current);
       fs.symlinkSync(logfileName, current);
     }
