@@ -105,6 +105,7 @@ export interface BaseTransportOptions {
 
 export interface LogMeta {
   ctx?: any;
+  format?: LoggerFormat;
   contextFormat?: LoggerFormat;
 }
 

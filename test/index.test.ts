@@ -1006,4 +1006,29 @@ describe('/test/index.test.ts', () => {
     await removeFileOrDir(logsDir);
   });
 
+  describe('MidwayLogger getChild method', () => {
+    it('should create a child logger with correct meta data', () => {
+      const logger = new MidwayLogger();
+      const meta = { requestId: '123' };
+      const childLogger = logger.getChild(meta);
+
+      expect(childLogger).toBeDefined();
+      expect(childLogger['meta']).toEqual(meta);
+    });
+
+    it('should create a child logger with custom format', () => {
+      const logger = new MidwayLogger();
+      logger.add('console', new ConsoleTransport());
+      const formatFn = jest.fn();
+      const childLogger = logger.getChild({ format: formatFn });
+
+      expect(childLogger).toBeDefined();
+      expect(childLogger['meta'].format).toEqual(formatFn);
+
+      childLogger.info('abc test %s', 'ok');
+      expect(formatFn).toHaveBeenCalled();
+      expect(formatFn.mock.calls[0][0].args[0]).toEqual('abc test %s');
+    });
+  });
+
 });
