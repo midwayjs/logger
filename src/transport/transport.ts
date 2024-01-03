@@ -45,9 +45,11 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
       return format(info.message);
     }
 
+    const customContextFormat =
+      meta.contextFormat || this.options.contextFormat;
     // for context logger
-    if (meta.ctx) {
-      return (meta.contextFormat || this.options.contextFormat)(info);
+    if (meta.ctx && customContextFormat) {
+      return customContextFormat(info);
     }
 
     const customFormat = meta.format || this.options.format;
@@ -120,6 +122,12 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
       originError: {
         get() {
           return args.find(arg => arg instanceof Error);
+        },
+        enumerable: false,
+      },
+      meta: {
+        get() {
+          return meta;
         },
         enumerable: false,
       },

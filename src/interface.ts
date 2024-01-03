@@ -11,7 +11,7 @@ export type LoggerLevel = 'all' | 'verbose' | 'silly' | 'debug' | 'info' | 'warn
 
 export type LoggerFormat<ExtraInfoOptions = LoggerInfo> = (info: ExtraInfoOptions, logger?: ILogger) => string | Record<any, any> | Buffer;
 
-export type LoggerInfo = {
+export type LoggerInfo<CustomMeta = any> = {
   level: string;
   timestamp: number;
   LEVEL: string;
@@ -21,6 +21,7 @@ export type LoggerInfo = {
   message: string;
   ctx?: any;
   originError?: Error;
+  meta?: LogMeta & CustomMeta;
 };
 
 export interface TransportUnionOptions {
