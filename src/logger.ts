@@ -149,6 +149,10 @@ export class MidwayLogger implements ILogger {
       transport.log(level, meta, ...args);
     }
   }
+
+  getChild(meta: Record<string, any> & LogMeta = {}) {
+    return new MidwayChildLogger(this, meta);
+  }
 }
 
 export class MidwayContextLogger<CTX> implements ILogger {
@@ -195,5 +199,39 @@ export class MidwayContextLogger<CTX> implements ILogger {
 
   public getContext(): CTX {
     return this.ctx;
+  }
+}
+
+export class MidwayChildLogger implements ILogger {
+  constructor(
+    protected readonly parentLogger: MidwayLogger,
+    protected readonly meta: Record<string, any> & LogMeta = {}
+  ) {}
+  debug(...args) {
+    this.transit('debug', ...args);
+  }
+
+  info(...args) {
+    this.transit('info', ...args);
+  }
+
+  warn(...args) {
+    this.transit('warn', ...args);
+  }
+
+  error(...args) {
+    this.transit('error', ...args);
+  }
+
+  verbose(...args: any[]): void {
+    this.transit('verbose', ...args);
+  }
+
+  write(...args: any[]): void {
+    this.transit(false, ...args);
+  }
+
+  transit(level: LoggerLevel | false, ...args) {
+    this.parentLogger.transit(level, this.meta, ...args);
   }
 }

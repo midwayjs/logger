@@ -45,22 +45,23 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
       return format(info.message);
     }
 
+    const customContextFormat =
+      meta.contextFormat || this.options.contextFormat;
     // for context logger
-    if (meta.ctx) {
-      if (meta.contextFormat) {
-        return meta.contextFormat(info);
-      } else if (this.options.contextFormat) {
-        return this.options.contextFormat(info);
-      }
+    if (meta.ctx && customContextFormat) {
+      return customContextFormat(info);
     }
-    if (this.options.format) {
-      return this.options.format(info);
+
+    const customFormat = meta.format || this.options.format;
+
+    if (customFormat) {
+      return customFormat(info);
     }
 
     if (level) {
       return format(
         '%s %s %s %s',
-        getFormatDate(info.timestamp, 'YYYY-MM-DD HH:mm:ss.SSS'),
+        info.timestamp,
         info.LEVEL,
         info.pid,
         info.message
@@ -84,7 +85,7 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
     Object.defineProperties(info, {
       timestamp: {
         get() {
-          return getFormatDate(Date.now(), 'YYYY-MM-DD HH:mm:ss.SSS');
+          return getFormatDate(new Date());
         },
         enumerable: false,
       },
@@ -121,6 +122,12 @@ export abstract class Transport<TransportOptions extends BaseTransportOptions>
       originError: {
         get() {
           return args.find(arg => arg instanceof Error);
+        },
+        enumerable: false,
+      },
+      meta: {
+        get() {
+          return meta;
         },
         enumerable: false,
       },

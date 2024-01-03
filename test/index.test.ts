@@ -9,7 +9,7 @@ import {
   ILogger,
   IMidwayLogger,
   EmptyTransport,
-  createFileLogger, JSONTransport,
+  createFileLogger, JSONTransport, LoggerInfo,
 } from '../src';
 import { join } from 'path';
 import {
@@ -1004,6 +1004,49 @@ describe('/test/index.test.ts', () => {
     expect(dir.length).toEqual(2);
 
     await removeFileOrDir(logsDir);
+  });
+
+  describe('MidwayLogger getChild method', () => {
+    it('should create a child logger with correct meta data', () => {
+      const logger = new MidwayLogger();
+      const meta = { requestId: '123' };
+      const childLogger = logger.getChild(meta);
+
+      expect(childLogger).toBeDefined();
+      expect(childLogger['meta']).toEqual(meta);
+    });
+
+    it('should create a child logger with custom format', () => {
+      const logger = new MidwayLogger();
+      logger.add('console', new ConsoleTransport());
+      const formatFn = jest.fn();
+      const childLogger = logger.getChild({ format: formatFn });
+
+      expect(childLogger).toBeDefined();
+      expect(childLogger['meta'].format).toEqual(formatFn);
+
+      childLogger.info('abc test %s', 'ok');
+      expect(formatFn).toHaveBeenCalled();
+      expect(formatFn.mock.calls[0][0].args[0]).toEqual('abc test %s');
+    });
+
+    it('create add category and format in parent', () => {
+      const formatFn = jest.fn((info: LoggerInfo<{
+        category: string;
+      }>) => {
+        return info.meta.category + ' ' + info.args[0];
+      });
+
+      const logger = new MidwayLogger({
+        format: formatFn
+      });
+      logger.add('console', new ConsoleTransport());
+
+      const childLogger = logger.getChild({ category: 'aaa'});
+      childLogger.info('test');
+      expect(formatFn).toHaveBeenCalled();
+      expect(formatFn.mock.calls[0][0].meta.category).toEqual('aaa');
+    });
   });
 
 });

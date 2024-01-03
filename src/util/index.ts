@@ -3,12 +3,9 @@ import { DefaultLogLevels } from '../constants';
 import * as fs from 'fs';
 import { dirname, basename } from 'path';
 import * as crypto from 'crypto';
-import * as dayjs from 'dayjs';
-import * as utc from 'dayjs/plugin/utc';
 import * as path from 'path';
 import * as os from 'os';
 import { Transport } from '../transport/transport';
-dayjs.extend(utc);
 
 export function isEnableLevel(
   inputLevel: LoggerLevel | false,
@@ -233,15 +230,6 @@ export function debounce(func: () => void, wait: number, immediate?) {
   };
 
   return debounced;
-}
-
-export function getFormatDate(
-  timestamp: number,
-  datePattern: string,
-  utc = false
-) {
-  const date = utc ? dayjs.utc(timestamp) : dayjs(timestamp);
-  return date.format(datePattern);
 }
 
 export const isDevelopmentEnvironment = env => {
@@ -816,4 +804,29 @@ export function BubbleEvents(emitter, proxy) {
 
 export function isWin32() {
   return os.platform() === 'win32';
+}
+
+/**
+ * 不使用 dayjs 实现格式化，因为 dayjs 会有性能问题
+ * 生成 YYYY-MM-DD HH:mm:ss.SSS 格式的时间
+ * @param date
+ */
+export function getFormatDate(date: Date) {
+  function pad(num, size = 2) {
+    const s = num + '';
+    return s.padStart(size, '0');
+  }
+
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+  const second = date.getSeconds();
+  const millisecond = date.getMilliseconds();
+
+  return `${year}-${pad(month)}-${pad(day)} ${pad(hour)}:${pad(minute)}:${pad(
+    second
+  )}.${pad(millisecond, 3)}`;
 }
