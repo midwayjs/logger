@@ -18,6 +18,7 @@ import {
   isWin32,
 } from '../util';
 import { hash } from '../util/hash';
+import { stringify } from 'safe-stable-stringify';
 
 export class FileTransport
   extends Transport<FileTransportOptions>
@@ -192,11 +193,11 @@ export class JSONTransport extends FileTransport {
     let buf = this.format(level, meta, args);
 
     if (typeof buf === 'string' || Buffer.isBuffer(buf)) {
-      buf = JSON.stringify({
+      buf = stringify({
         message: buf.toString(),
       });
     } else {
-      buf = JSON.stringify(buf);
+      buf = stringify(buf);
     }
 
     buf += this.options.eol;
