@@ -1,4 +1,12 @@
 
+3.3.0 / 2024-02-25
+==================
+
+  * chore(deps): update codecov/codecov-action action to v4 (#115)
+  * fix: json stringify circular (#117)
+  * chore(deps): update dependency typescript to v5.3.3 (#110)
+  * chore(deps): update dependency ts-node to v10.9.2 (#112)
+
 3.2.0 / 2024-01-03
 ==================
 
