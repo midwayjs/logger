@@ -27,7 +27,7 @@ export class FileTransport
   protected logStream: any;
   protected bufSize = 0;
   protected buf = [];
-  protected timer: NodeJS.Timer;
+  protected timer: NodeJS.Timeout;
 
   constructor(
     protected readonly options: FileTransportOptions = {} as FileTransportOptions
