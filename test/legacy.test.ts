@@ -503,5 +503,41 @@ describe('/test/legacy.test.ts', () => {
         }
       `);
     });
+
+    it('disable and enable console', () => {
+      const result = formatLegacyLoggerOptions({
+        level: 'warn',
+        transports: {
+          console: false,
+        },
+        enableConsole: true,
+      });
+
+      expect(result.transports.console).toBe(false);
+
+      const result1 = formatLegacyLoggerOptions({
+        level: 'warn',
+        transports: {
+          console: {},
+        },
+        enableConsole: true,
+      });
+
+      expect(result1.transports.console).toEqual({});
+
+      const result2 = formatLegacyLoggerOptions({
+        level: 'warn',
+        transports: {
+          console: {
+            autoColors: true,
+          },
+        },
+        enableConsole: true,
+      });
+
+      expect(result2.transports.console).toEqual({
+        "autoColors": true
+      });
+    });
   });
 });
