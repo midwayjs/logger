@@ -1,4 +1,11 @@
 
+3.4.0 / 2024-03-25
+==================
+
+  * fix: disable console logger output in production env (#120)
+  * chore(deps): update dependency typescript to v5.4.3 (#119)
+  * chore(deps): update dependency typescript to v5.4.2 (#118)
+
 3.3.0 / 2024-02-25
 ==================
 
