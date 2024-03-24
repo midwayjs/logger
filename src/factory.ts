@@ -99,9 +99,11 @@ export class LoggerFactory extends Map<string, ILogger> {
           dir: join(logRoot, 'logs', appInfo.name),
           auditFileDir: '.audit',
           transports: {
-            console: {
-              autoColors: isDevelopment,
-            },
+            console: isDevelopment
+              ? {
+                  autoColors: isDevelopment,
+                }
+              : false,
             file: {
               bufferWrite: !isDevelopment,
             },
