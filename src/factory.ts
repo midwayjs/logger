@@ -91,6 +91,13 @@ export class LoggerFactory extends Map<string, ILogger> {
   }) {
     const isDevelopment = isDevelopmentEnvironment(appInfo.env);
     const logRoot = process.env['MIDWAY_LOGGER_WRITEABLE_DIR'] ?? appInfo.root;
+
+    if (!logRoot) {
+      throw new Error(
+        'Midway Logger requires a root path during initialization, but it was provided empty. Please set it manually in the "logger.default.dir" configuration.'
+      );
+    }
+
     return {
       midwayLogger: {
         default: {
