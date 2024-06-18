@@ -633,6 +633,9 @@ export function formatLegacyLoggerOptions(
   }
 
   function deepMerge(target, source) {
+    if (!target) {
+      return source;
+    }
     if (source && !isPlainObject(source)) {
       return source;
     }
