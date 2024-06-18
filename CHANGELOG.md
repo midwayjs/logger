@@ -1,4 +1,12 @@
 
+3.4.2 / 2024-06-18
+==================
+
+  * fix: deepmerge target npe (#125)
+  * chore(deps): update dependency @types/node to v20.14.5 (#124)
+  * chore(deps): update dependency @types/node to v20.14.2 (#100)
+  * chore(deps): update dependency typescript to v5.4.5 (#121)
+
 3.4.1 / 2024-04-08
 ==================
 
