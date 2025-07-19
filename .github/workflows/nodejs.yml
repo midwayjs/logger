@@ -12,6 +12,12 @@ jobs:
         node-version: [20.x]
 
     steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+        run_install: false
+    
     - name: Git checkout
       uses: actions/checkout@v4
 
@@ -19,11 +25,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
 
-    - run: npm install && npm install codecov
-    - run: npm run build --if-present
-    - run: npm run lint
-    - run: npm run cov
+    - run: pnpm install && pnpm install codecov
+    - run: pnpm run build --if-present
+    - run: pnpm run lint
+    - run: pnpm run cov
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
 
