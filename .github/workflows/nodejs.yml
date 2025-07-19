@@ -28,7 +28,7 @@ jobs:
         cache: 'pnpm'
 
     - run: pnpm install && pnpm install codecov
-    - run: pnpm run build --if-present
+    - run: pnpm run build
     - run: pnpm run lint
     - run: pnpm run cov
     - name: Upload coverage to Codecov
