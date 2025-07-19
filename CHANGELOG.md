@@ -1,4 +1,21 @@
 
+4.0.0 / 2025-07-19
+==================
+
+  * feat: upgrade to 4.0 (#145)
+  * chore(deps): update dependency @types/node to v22.14.0 (#141)
+  * chore(deps): update dependency @types/node to v22.10.10 (#139)
+  * chore(deps): update dependency @types/node to v22.10.5 (#138)
+  * chore(deps): update dependency @types/node to v22.9.1 (#137)
+  * chore(deps): update codecov/codecov-action action to v5 (#136)
+  * chore(deps): update dependency @types/node to v22 (#135)
+  * chore(deps): update dependency @types/node to v20.17.1 (#133)
+  * chore(deps): update dependency @types/node to v20.16.15 (#132)
+  * chore(deps): update dependency @types/node to v20.16.13 (#131)
+  * chore(deps): update dependency @types/node to v20.16.12 (#130)
+  * chore(deps): update dependency @types/node to v20.16.1 (#128)
+  * chore(deps): update dependency @types/node to v20.14.7 (#126)
+
 3.4.2 / 2024-06-18
 ==================
 
