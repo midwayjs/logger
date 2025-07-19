@@ -4,6 +4,10 @@
 
 @midwayjs/logger is a log module for midway project.
 
+## Required
+
+Node.js >= v20 since v4.0.0
+
 ## Install
 
 ```bash
@@ -19,7 +23,6 @@ const logger = loggers.createLogger('logger', {
   // some logger options
 })
 ```
-
 
 
 ## Create With Transport
@@ -196,8 +199,6 @@ const logger = loggers.createLogger('consoleLogger', {
   }
 });
 ```
-
-
 
 
 ## Default Logger Options
