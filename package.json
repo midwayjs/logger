@@ -34,14 +34,14 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc",
-    "test": "./node_modules/.bin/jest --runInBand",
-    "cov": "./node_modules/.bin/jest --runInBand --coverage --forceExit",
+    "test": "jest --runInBand",
+    "cov": "jest --runInBand --coverage --forceExit",
     "lint": "mwts check",
     "lint:fix": "mwts fix"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:midwayjs/logger.git"
+    "url": "git+ssh://git@github.com/midwayjs/logger.git"
   },
   "license": "MIT"
 }
