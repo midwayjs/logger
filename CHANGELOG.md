@@ -1,4 +1,13 @@
 
+4.0.1 / 2025-08-26
+==================
+
+  * fix: missing dist
+  * chore(deps): update actions/checkout action to v5 (#151)
+  * chore(deps): update dependency ts-jest to v29.4.1 (#148)
+  * chore(deps): update dependency fs-extra to v11.3.1 (#149)
+  * chore: update
+
 4.0.0 / 2025-07-19
 ==================
 
