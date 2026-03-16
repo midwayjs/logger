@@ -24,6 +24,23 @@ const logger = loggers.createLogger('logger', {
 })
 ```
 
+## Quick Create
+
+```ts
+import { createLogger, createConsoleLogger, createFileLogger } from '@midwayjs/logger';
+
+const logger = createLogger('myLogger', {
+  level: 'info',
+});
+
+const consoleLogger = createConsoleLogger('consoleLogger');
+
+const fileLogger = createFileLogger('fileLogger', {
+  dir: './logs',
+  fileLogName: 'app.log',
+});
+```
+
 
 ## Create With Transport
 
@@ -138,7 +155,7 @@ info is a default metadata, include some properties.
 
 
 
-## Tranports
+## Transports
 
 The actual behavior of the log output we call the transport.The log library has four built-in default Transports.
 
@@ -203,9 +220,8 @@ const logger = loggers.createLogger('consoleLogger', {
 
 ## Default Logger Options
 
-find more options in [interface](https://github.com/midwayjs/logger/blob/main/src/interface.ts).
-
+find more options in [interface](./src/interface.ts).
 
 ## License
 
-[MIT]((http://github.com/midwayjs/logger/blob/master/LICENSE))
+[MIT](http://github.com/midwayjs/logger/blob/master/LICENSE)
