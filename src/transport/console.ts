@@ -46,6 +46,10 @@ export class ConsoleTransport
         return Color.yellow;
       case 'error':
         return Color.red;
+      case 'verbose':
+        return Color.cyan;
+      case 'silly':
+        return Color.magenta;
       default:
         return Color.white;
     }
