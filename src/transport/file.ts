@@ -28,6 +28,8 @@ export class FileTransport
   protected bufSize = 0;
   protected buf = [];
   protected timer: NodeJS.Timeout;
+  private logRemovedHandler?: (params: { name: string }) => void;
+  private rotateHandler?: (oldFile: string) => void;
 
   constructor(
     protected readonly options: FileTransportOptions = {} as FileTransportOptions
@@ -79,8 +81,8 @@ export class FileTransport
       ...options,
     });
 
-    this.logStream.on('logRemoved', params => {
-      if (options.zippedArchive) {
+    if (options.zippedArchive) {
+      this.logRemovedHandler = params => {
         const gzName = params.name + '.gz';
         if (fs.existsSync(gzName)) {
           try {
@@ -91,11 +93,10 @@ export class FileTransport
           }
           return;
         }
-      }
-    });
+      };
+      this.logStream.on('logRemoved', this.logRemovedHandler);
 
-    if (options.zippedArchive) {
-      this.logStream.on('rotate', oldFile => {
+      this.rotateHandler = oldFile => {
         const oldFileExist = fs.existsSync(oldFile);
         const gzExist = fs.existsSync(oldFile + '.gz');
         if (!oldFileExist || gzExist) {
@@ -113,7 +114,8 @@ export class FileTransport
               fs.unlinkSync(oldFile);
             }
           });
-      });
+      };
+      this.logStream.on('rotate', this.rotateHandler);
     }
   }
 
@@ -152,6 +154,12 @@ export class FileTransport
     }
 
     if (this.logStream) {
+      if (this.logRemovedHandler) {
+        this.logStream.removeListener('logRemoved', this.logRemovedHandler);
+      }
+      if (this.rotateHandler) {
+        this.logStream.removeListener('rotate', this.rotateHandler);
+      }
       FileStreamRotatorManager.close(this.logStream);
       // 处理重复调用 close
       this.logStream = null;

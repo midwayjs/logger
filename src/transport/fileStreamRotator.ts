@@ -518,8 +518,8 @@ export class FileStreamRotatorManager {
       }
 
       stream = this.streamPool.get(options.filename);
-      let num = this.loggerRef.get(stream);
-      this.loggerRef.set(stream, num++);
+      const num = this.loggerRef.get(stream) ?? 0;
+      this.loggerRef.set(stream, num + 1);
     } else {
       stream = new FileStreamRotator().getStream(options);
     }
