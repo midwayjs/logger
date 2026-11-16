@@ -6,7 +6,7 @@
   "typings": "index.d.ts",
   "dependencies": {
     "dayjs": "^1.11.13",
-    "safe-stable-stringify": "^2.5.0"
+    "safe-stable-stringify": "^3.0.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
